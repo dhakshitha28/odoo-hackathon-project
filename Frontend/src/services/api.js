@@ -14,10 +14,14 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    const url = err.config?.url || ''
+    const isAuthCall = url.includes('/auth/login') || url.includes('/auth/signup')
+    if (err.response?.status === 401 && !isAuthCall) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      window.location.href = '/signin'
+      if (window.location.pathname !== '/signin') {
+        window.location.href = '/signin'
+      }
     }
     return Promise.reject(err)
   },

@@ -1,107 +1,80 @@
-import { useAuth } from '../../context/AuthContext'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Calendar, Clock, User } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
+import { fetchEmployeeDashboard } from '../../api/employee'
 import { Avatar } from '../../components/ui/Avatar'
-import { getEmployeeAttendance as getAttendance, getEmployeeLeaves, getEmployeeSalary, activityLog } from '../../data/mockData'
-import { Clock, Calendar, Wallet, TrendingUp, User } from 'lucide-react'
+import { Alert } from '../../components/ui/Alert'
+import { timeAgo } from '../../lib/utils'
 
 export default function EmployeeDashboard() {
   const { user } = useAuth()
-  const today = new Date().toISOString().split('T')[0]
-  const todayAttendance = getAttendance(user.id, today)
-  const leaves = getEmployeeLeaves(user.id)
-  const salary = getEmployeeSalary(user.id)
-  const approvedLeaves = leaves.filter(l => l.status === 'APPROVED').length
-  const pendingLeaves = leaves.filter(l => l.status === 'PENDING').length
+  const [data, setData] = useState(null)
+  const [error, setError] = useState('')
 
-  const quickActions = [
-    { label: 'My Profile', to: '/profile', icon: User, bg: 'bg-primary-50 text-primary' },
-    { label: 'Attendance', to: '/attendance', icon: Clock, bg: 'bg-status-present/10 text-status-present' },
-    { label: 'Time Off', to: '/leave', icon: Calendar, bg: 'bg-primary-container/10 text-primary-container' },
-    { label: 'Payroll', to: '/payroll', icon: Wallet, bg: 'bg-secondary-container text-on-secondary-container' },
-  ]
+  useEffect(() => {
+    fetchEmployeeDashboard()
+      .then(setData)
+      .catch((err) => setError(err.message))
+  }, [])
+
+  const attendance = data?.todayAttendance || data?.attendanceCard
+  const notifications = data?.notifications || []
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-headline text-on-surface mb-2 tracking-tight">Good morning, {user.firstName}</h1>
-          <p className="text-on-surface-variant text-sm md:text-base font-body">Here&apos;s what&apos;s happening today</p>
-        </div>
-        <p className="text-sm text-on-surface-variant font-body">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+      <div>
+        <h1 className="text-4xl font-headline tracking-tight">Good morning, {data?.name || user.firstName}</h1>
+        <p className="mt-1 text-sm text-ink-muted">{data?.jobPosition} · {data?.department || data?.company}</p>
       </div>
 
-      {/* Status Cards */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/60 soft-shadow">
-          <span className="text-on-surface-variant text-sm font-medium mb-4 flex items-center gap-2 font-label">
-            <Clock className="text-primary" /> Today&apos;s Status
-          </span>
-          <div className="flex items-center gap-2">
-            <span className={`status-dot ${todayAttendance?.status === 'PRESENT' ? 'status-present' : todayAttendance?.status === 'LEAVE' ? 'bg-info' : todayAttendance?.status === 'HALF_DAY' ? 'status-break' : 'bg-outline-variant'}`} />
-            <span className="text-3xl font-headline font-semibold text-on-surface">
-              {todayAttendance?.status === 'PRESENT' ? 'Present' : todayAttendance?.status === 'LEAVE' ? 'On Leave' : todayAttendance?.status === 'HALF_DAY' ? 'Half Day' : '—'}
-            </span>
+      {error && <Alert variant="destructive" description={error} />}
+
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Link to="/profile" className="card p-5 hover:border-primary/40">
+          <div className="mb-3 flex items-center gap-3">
+            <Avatar src={data?.profilePictureUrl} firstName={user.firstName} lastName={user.lastName} size="lg" />
+            <div>
+              <p className="font-semibold">{data?.name}</p>
+              <p className="text-xs text-ink-muted">{data?.employeeId}</p>
+            </div>
           </div>
-          {todayAttendance?.checkIn && <p className="text-xs text-on-surface-variant font-label mt-2">Checked in at {todayAttendance.checkIn}</p>}
-        </div>
+          <p className="text-sm text-ink-muted">{data?.email}</p>
+          <p className="text-sm text-ink-muted">{data?.mobile}</p>
+          <p className="mt-3 text-xs font-semibold text-primary">My Profile</p>
+        </Link>
 
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/60 soft-shadow">
-          <span className="text-on-surface-variant text-sm font-medium mb-4 flex items-center gap-2 font-label">
-            <Calendar className="text-primary-container" /> Leave Balance
-          </span>
-          <div className="text-3xl font-headline font-semibold text-on-surface">{approvedLeaves}<span className="text-lg text-on-surface-variant font-body font-normal"> used</span></div>
-          <p className="text-xs text-on-surface-variant font-label mt-2">{pendingLeaves} pending</p>
-        </div>
+        <Link to="/attendance" className="card p-5 hover:border-primary/40">
+          <Clock className="mb-3 h-5 w-5 text-primary" />
+          <p className="text-sm text-ink-muted">Today&apos;s attendance</p>
+          <p className="mt-1 text-2xl font-extrabold">{attendance?.status || '—'}</p>
+          <p className="mt-2 text-xs text-ink-muted">In {attendance?.checkInTime ? new Date(attendance.checkInTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—'} · Hours {attendance?.workingHours || '—'}</p>
+        </Link>
 
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/60 soft-shadow">
-          <span className="text-on-surface-variant text-sm font-medium mb-4 flex items-center gap-2 font-label">
-            <Wallet className="text-secondary" /> Monthly Salary
-          </span>
-          <div className="text-3xl font-headline font-semibold text-on-surface">{'\u20B9'}{salary?.monthlyWage?.toLocaleString('en-IN') || '—'}</div>
-          <p className="text-xs text-on-surface-variant font-label mt-2">Last paid on Aug 1</p>
-        </div>
-
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/60 soft-shadow">
-          <span className="text-on-surface-variant text-sm font-medium mb-4 flex items-center gap-2 font-label">
-            <TrendingUp className="text-primary" /> This Month
-          </span>
-          <div className="text-3xl font-headline font-semibold text-on-surface">22<span className="text-lg text-on-surface-variant font-body font-normal"> d</span></div>
-          <p className="text-xs text-on-surface-variant font-label mt-2">3 days remaining</p>
-        </div>
+        <Link to="/leave" className="card p-5 hover:border-primary/40">
+          <Calendar className="mb-3 h-5 w-5 text-primary" />
+          <p className="text-sm text-ink-muted">Pending leave</p>
+          <p className="mt-1 text-2xl font-extrabold">{data?.pendingLeaveCount ?? 0}</p>
+          <p className="mt-2 text-xs font-semibold text-primary">Time off</p>
+        </Link>
       </section>
 
-      {/* Quick Actions */}
-      <section>
-        <h2 className="text-2xl font-headline text-on-surface mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {quickActions.map((action) => (
-            <Link key={action.to} to={action.to} className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/40 soft-shadow hover:border-outline-variant transition-all cursor-pointer group">
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${action.bg}`}>
-                <action.icon className="w-5 h-5" />
+      <section className="card">
+        <div className="border-b border-outline-variant px-6 py-4">
+          <h3 className="text-xl font-headline">Recent activity</h3>
+        </div>
+        <div className="divide-y divide-outline-variant/50">
+          {notifications.length === 0 ? (
+            <p className="p-6 text-sm text-ink-muted">No notifications yet.</p>
+          ) : notifications.map((item) => (
+            <div key={item.id} className="flex items-start gap-3 px-6 py-4">
+              <User className="mt-0.5 h-4 w-4 text-primary" />
+              <div>
+                <p className="text-sm">{item.message}</p>
+                <p className="mt-1 text-xs text-ink-faint">{item.createdAt ? timeAgo(item.createdAt) : item.type}</p>
               </div>
-              <span className="text-sm font-label font-medium text-on-surface group-hover:text-primary transition-colors">{action.label}</span>
-            </Link>
+            </div>
           ))}
-        </div>
-      </section>
-
-      {/* Recent Activity */}
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant/40 soft-shadow">
-        <div className="px-6 py-4 border-b border-outline-variant/40">
-          <h3 className="text-2xl font-headline text-on-surface">Recent Activity</h3>
-        </div>
-        <div className="p-6">
-          <div className="space-y-4">
-            {activityLog.slice(0, 5).map((activity) => (
-              <div key={activity.id} className="flex items-center gap-4 py-3 border-b border-outline-variant/20 last:border-0">
-                <Avatar firstName={activity.employee.split(' ')[0]} lastName={activity.employee.split(' ')[1]} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-body text-on-surface"><span className="font-medium">{activity.employee}</span> <span className="text-on-surface-variant">{activity.action}</span></p>
-                  <p className="text-xs text-on-surface-variant font-label mt-0.5">{activity.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
     </div>

@@ -19,15 +19,16 @@ export default function EmployeeCard({ employee }) {
         <StatusIndicator status={employee.status} />
       </div>
       <div className="flex flex-col items-center text-center pt-2">
-        <Avatar firstName={employee.firstName} lastName={employee.lastName} size="lg" className="mb-3 ring-4 ring-primary-50" />
+        <Avatar
+          src={employee.profilePictureUrl}
+          firstName={employee.firstName}
+          lastName={employee.lastName}
+          size="lg"
+          className="mb-3 ring-4 ring-primary-50"
+        />
         <h3 className="font-semibold text-on-surface">
           {employee.firstName} {employee.lastName}
         </h3>
-        <p className="text-sm text-ink-muted mt-0.5">{employee.designation}</p>
-        <p className="text-xs text-ink-faint mt-1">{employee.department}</p>
-        <p className="mt-3 font-mono text-[11px] tracking-wide text-primary bg-primary-50 px-2 py-1 rounded-lg">
-          {employee.loginId}
-        </p>
       </div>
     </motion.button>
   )
