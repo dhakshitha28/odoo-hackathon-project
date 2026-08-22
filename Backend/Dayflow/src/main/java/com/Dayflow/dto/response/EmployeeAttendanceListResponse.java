@@ -9,5 +9,8 @@ import java.util.List;
 @Builder
 public class EmployeeAttendanceListResponse {
     private EmployeeAttendanceTodayResponse today;
+    private long presentDays;
+    private long leaveDays;
+    private long totalWorkingDays;
     private List<EmployeeAttendanceRecordResponse> records;
 }

@@ -85,6 +85,8 @@ public class EmployeeService {
             .skills(request.getSkills())
             .certifications(request.getCertifications())
             .resumeUrl(request.getResumeUrl())
+            .paidTimeOffBalance(24.0)
+            .sickLeaveBalance(7.0)
             .company(creator.getCompany())
             .build();
 

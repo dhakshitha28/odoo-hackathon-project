@@ -13,6 +13,7 @@ public class EmployeeAttendanceTodayResponse {
     private LocalDateTime checkOutTime;
     private AttendanceDayStatus status;
     private String workingHours;
+    private String extraHours;
     private long workingMinutes;
     private boolean checkedIn;
 }

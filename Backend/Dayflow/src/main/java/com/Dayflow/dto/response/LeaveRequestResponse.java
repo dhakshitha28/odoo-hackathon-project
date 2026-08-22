@@ -12,10 +12,13 @@ import java.time.LocalDateTime;
 @Builder
 public class LeaveRequestResponse {
     private Long id;
+    private String employeeId;
+    private LeaveType leaveType;
     private LocalDate startDate;
     private LocalDate endDate;
-    private LeaveType leaveType;
-    private String reason;
+    private Double numberOfDays;
+    private String remarks;
+    private String attachmentUrl;
     private TimeOffStatus status;
     private LocalDateTime createdAt;
 }

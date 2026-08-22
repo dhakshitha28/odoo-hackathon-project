@@ -107,6 +107,20 @@ public class User {
 
     private String uanNumber;
 
+    @Builder.Default
+    private Double paidTimeOffBalance = 24.0;
+
+    @Builder.Default
+    private Double sickLeaveBalance = 7.0;
+
+    private Double basicSalary;
+
+    private Double allowances;
+
+    private Double bonus;
+
+    private Double deductions;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;

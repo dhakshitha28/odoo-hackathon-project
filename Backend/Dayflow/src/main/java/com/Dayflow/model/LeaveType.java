@@ -1,8 +1,7 @@
 package com.Dayflow.model;
 
 public enum LeaveType {
-    SICK,
-    CASUAL,
-    EARNED,
-    UNPAID
+    PAID_TIME_OFF,
+    SICK_LEAVE,
+    UNPAID_LEAVE
 }

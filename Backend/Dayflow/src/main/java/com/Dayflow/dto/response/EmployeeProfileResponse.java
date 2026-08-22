@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -15,6 +16,7 @@ public class EmployeeProfileResponse {
     private PrivateInfo privateInfo;
     private SalaryInfo salaryInfo;
     private BankDetails bankDetails;
+    private List<Document> documents;
     private Security security;
 
     @Data
@@ -22,6 +24,7 @@ public class EmployeeProfileResponse {
     public static class Basic {
         private String profilePictureUrl;
         private String name;
+        private String employeeId;
         private String jobPosition;
         private String email;
         private String mobile;
@@ -55,6 +58,10 @@ public class EmployeeProfileResponse {
     @Builder
     public static class SalaryInfo {
         private Double salary;
+        private Double basicSalary;
+        private Double allowances;
+        private Double bonus;
+        private Double deductions;
         private boolean readOnly;
     }
 
@@ -67,6 +74,13 @@ public class EmployeeProfileResponse {
         private String panNumber;
         private String uanNumber;
         private String employeeCode;
+    }
+
+    @Data
+    @Builder
+    public static class Document {
+        private String name;
+        private String url;
     }
 
     @Data

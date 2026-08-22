@@ -39,5 +39,9 @@ public class TimeOff {
     @Column(length = 1000)
     private String reason;
 
+    private String attachmentUrl;
+
+    private Double numberOfDays;
+
     private LocalDateTime createdAt;
 }
