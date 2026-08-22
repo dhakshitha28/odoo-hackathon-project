@@ -46,4 +46,28 @@ public class EmailService {
             log.warn("Could not send email. Use the verification link logged above. Reason: {}", e.getMessage());
         }
     }
+
+    public void sendEmployeeCredentials(User user, String temporaryPassword) {
+        log.info("========================================");
+        log.info("EMPLOYEE CREDENTIALS for {}: Login ID={}, Temporary password={}",
+            user.getEmail(), user.getLoginId(), temporaryPassword);
+        log.info("========================================");
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(user.getEmail());
+            message.setSubject("Dayflow - Your Employee Account");
+            message.setText(
+                "Hello " + user.getFirstName() + ",\n\n"
+                + "An employee account has been created for you.\n\n"
+                + "Login ID: " + user.getLoginId() + "\n"
+                + "Temporary password: " + temporaryPassword + "\n\n"
+                + "Please change your password after logging in.\n\n"
+                + "Regards,\nDayflow Team"
+            );
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.warn("Could not send employee credentials email. Use the credentials logged above. Reason: {}", e.getMessage());
+        }
+    }
 }

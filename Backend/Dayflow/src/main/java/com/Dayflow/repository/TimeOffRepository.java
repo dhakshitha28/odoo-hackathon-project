@@ -5,6 +5,7 @@ import com.Dayflow.model.TimeOffStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface TimeOffRepository extends JpaRepository<TimeOff, Long> {
     boolean existsByUserIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
@@ -13,4 +14,8 @@ public interface TimeOffRepository extends JpaRepository<TimeOff, Long> {
         LocalDate startDate,
         LocalDate endDate
     );
+
+    List<TimeOff> findByUserIdOrderByIdDesc(Long userId);
+
+    long countByUserIdAndStatus(Long userId, TimeOffStatus status);
 }

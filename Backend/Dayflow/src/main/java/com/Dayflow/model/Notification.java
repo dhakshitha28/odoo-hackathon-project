@@ -3,17 +3,16 @@ package com.Dayflow.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "time_offs")
+@Table(name = "notifications")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TimeOff {
+public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,20 +23,14 @@ public class TimeOff {
     private User user;
 
     @Column(nullable = false)
-    private LocalDate startDate;
+    private String type;
+
+    @Column(nullable = false, length = 500)
+    private String message;
 
     @Column(nullable = false)
-    private LocalDate endDate;
+    private boolean readFlag = false;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TimeOffStatus status;
-
-    @Enumerated(EnumType.STRING)
-    private LeaveType leaveType;
-
-    @Column(length = 1000)
-    private String reason;
-
     private LocalDateTime createdAt;
 }

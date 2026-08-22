@@ -5,6 +5,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -37,6 +38,16 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler({ForbiddenException.class, AccessDeniedException.class})
+    public ResponseEntity<ApiResponse<Void>> handleForbidden(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+            ApiResponse.<Void>builder()
+                .success(false)
+                .message("User does not have permission")
+                .build()
+        );
+    }
+
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ApiResponse<Void>> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(
@@ -53,6 +64,16 @@ public class GlobalExceptionHandler {
             ApiResponse.<Void>builder()
                 .success(false)
                 .message("Invalid JSON body. Check your request format.")
+                .build()
+        );
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConflict(ConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiResponse.<Void>builder()
+                .success(false)
+                .message(ex.getMessage())
                 .build()
         );
     }
