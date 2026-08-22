@@ -9,31 +9,33 @@ import StatusIndicator from '../../components/employees/StatusIndicator'
 import Button from '../../components/ui/Button'
 import { formatCurrency } from '../../lib/utils'
 import { computeSalary } from '../../lib/salary'
+import AdminProfilePage from './AdminProfilePage'
 
 export default function ProfilePage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { team, salaries, attendance, updateSalary } = useHR()
-  const viewingId = id ? Number(id) : user.id
+  const manager = isManager(user?.role)
+  const ownProfile = !id
+  const viewingId = id ? Number(id) : user?.id
   const profile = team.find((e) => e.id === viewingId)
   const fromCard = Boolean(id)
-  const ownProfile = !id || Number(id) === user.id
-  const manager = isManager(user.role)
-  const [tab, setTab] = useState(fromCard && !ownProfile ? 0 : 0)
+  const [tab, setTab] = useState(0)
   const salary = salaries.find((s) => s.employeeId === viewingId)
   const [wage, setWage] = useState(salary?.monthlyWage || 50000)
   const computed = useMemo(() => computeSalary(wage), [wage])
   const records = attendance.filter((a) => a.employeeId === viewingId)
 
+  if (ownProfile && manager) {
+    return <AdminProfilePage />
+  }
+
   if (!profile) {
     return <p className="py-16 text-center text-ink-muted">Employee not found.</p>
   }
 
-  const tabs = fromCard && !ownProfile
-    ? ['Personal', 'Job', 'Salary']
-    : ['Personal', 'Job', 'Salary']
-
+  const tabs = ['Personal', 'Job', 'Salary']
   const canEditSalary = manager && (!fromCard || ownProfile || manager)
   const salaryReadOnly = fromCard && !manager
 
@@ -168,7 +170,6 @@ export default function ProfilePage() {
                 ))}
               </tbody>
             </table>
-            <p className="text-sm text-ink-muted">Earnings total {formatCurrency(computed.componentsTotal)} of wage {formatCurrency(computed.monthlyWage)}.</p>
             {records.length > 0 && fromCard && (
               <p className="text-xs text-ink-faint">Attendance history lives in the Attendance module.</p>
             )}
