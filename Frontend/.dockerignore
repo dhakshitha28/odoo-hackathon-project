@@ -1,0 +1,8 @@
+# WHERE: C:\Dayflow\Frontend\.dockerignore
+# WHY:  Excludes node_modules and build cache to speed up Docker build
+
+node_modules/
+dist/
+.git
+.gitignore
+*.md

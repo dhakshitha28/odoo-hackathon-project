@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, useState } from 'react'
 import { demoAccounts, employees as seedEmployees } from '../data/mockData'
 import { generateEmployeeId } from '../lib/employeeId'
+import { loginRequest, signupRequest } from '../api/auth'
 
 const AuthContext = createContext(null)
 const ACCOUNTS_KEY = 'dayflow-accounts-v4'
@@ -48,6 +49,37 @@ function getInitialAuth() {
   }
 }
 
+export function mapAuthToUser(authData, extra = {}) {
+  return {
+    id: extra.id || authData.loginId,
+    loginId: authData.loginId,
+    email: authData.email,
+    role: authData.role,
+    companyName: authData.companyName,
+    emailVerified: authData.emailVerified ?? true,
+    firstName: extra.firstName || 'User',
+    lastName: extra.lastName || '',
+    phone: extra.phone || extra.phoneNumber || '',
+    employeeId: extra.employeeId || '',
+    mustChangePassword: false,
+    status: 'present',
+    department: authData.role === 'EMPLOYEE' ? 'Operations' : 'HR',
+    designation:
+      authData.role === 'ADMIN' ? 'Company Admin' : authData.role === 'HR' ? 'HR Officer' : 'Team Member',
+    dateOfJoining: extra.dateOfJoining || new Date().toISOString().slice(0, 10),
+    profilePicture: extra.logoUrl || null,
+    address: '',
+    gender: '',
+    dateOfBirth: '',
+    bloodGroup: '',
+    maritalStatus: '',
+    nationality: 'Indian',
+    empCode: extra.employeeId || '',
+    education: '',
+    skills: '',
+  }
+}
+
 export function AuthProvider({ children }) {
   const initial = getInitialAuth()
   const [user, setUser] = useState(initial.user)
@@ -66,37 +98,10 @@ export function AuthProvider({ children }) {
     localStorage.setItem('user', JSON.stringify(userData))
   }
 
-  const login = (identifier, password) => {
-    const id = identifier.trim().toLowerCase()
-    const pass = password.trim()
-    const account = accounts.find((a) => {
-      const email = a.email.toLowerCase()
-      const loginId = a.loginId.toLowerCase()
-      return email === id || loginId === id
-    })
-    if (!account) {
-      throw new Error('No account found. Use Login ID (OI…) or work email.')
-    }
-    const validPassword =
-      pass === account.password ||
-      pass.toLowerCase() === account.loginId.toLowerCase() ||
-      pass.toLowerCase() === account.email.toLowerCase()
-    if (!validPassword) {
-      throw new Error(`Wrong password. First password is the Login ID: ${account.loginId}`)
-    }
-    if (account.pending) {
-      throw new Error('Account is pending admin activation')
-    }
-    const extras = loadExtras()
-    const profile = [...seedEmployees, ...extras].find((e) => e.email === account.email)
-    if (!profile) {
-      throw new Error('Employee profile is missing')
-    }
-    const userData = {
-      ...profile,
-      mustChangePassword: account.mustChangePassword,
-    }
-    persistUser(userData, 'mock-jwt-token')
+  const login = async (loginId, password) => {
+    const authData = await loginRequest(loginId.trim(), password)
+    const userData = mapAuthToUser(authData)
+    persistUser(userData, authData.token)
     return userData
   }
 
@@ -156,7 +161,7 @@ export function AuthProvider({ children }) {
   }
 
   const changePassword = (current, next) => {
-    const account = accounts.find((a) => a.email === user.email)
+    const account = accounts.find((a) => a.email === user?.email)
     if (!account || account.password !== current) {
       throw new Error('Current password is incorrect')
     }
@@ -170,50 +175,43 @@ export function AuthProvider({ children }) {
     persistAccounts([...accounts, { pending: false, ...account }])
   }
 
-  const registerCompany = ({ companyName, logoDataUrl, name, email, phone }) => {
-    if (accounts.some((a) => a.email.toLowerCase() === email.toLowerCase())) {
-      throw new Error('Email already registered')
-    }
-    const parts = name.trim().split(/\s+/)
-    const firstName = parts[0] || 'Admin'
-    const lastName = parts.slice(1).join(' ') || 'User'
-    const year = String(new Date().getFullYear())
-    const loginId = generateEmployeeId(firstName, lastName, `${year}-01-01`, allLoginIds(accounts))
-    const extras = loadExtras()
-    const id = Math.max(0, ...seedEmployees.map((e) => e.id), ...extras.map((e) => e.id)) + 1
-    const employee = {
-      id,
-      loginId,
+  const registerCompany = async ({
+    companyName,
+    logoUrl,
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    employeeId,
+    password,
+    confirmPassword,
+    role,
+  }) => {
+    const response = await signupRequest({
+      companyName,
+      logoUrl: logoUrl || null,
       firstName,
       lastName,
       email,
-      phone,
-      role: 'ADMIN',
-      department: 'HR',
-      designation: 'Company Admin',
-      dateOfJoining: `${year}-01-01`,
-      profilePicture: logoDataUrl || null,
-      status: 'present',
-      address: '',
-      gender: '',
-      dateOfBirth: '',
-      bloodGroup: '',
-      maritalStatus: '',
-      nationality: 'Indian',
-      empCode: `EMP${String(id).padStart(3, '0')}`,
-      education: '',
-      skills: '',
-      accountStatus: 'ACTIVE',
-      companyName,
+      phoneNumber,
+      employeeId,
+      password,
+      confirmPassword,
+      role,
+    })
+
+    const signupData = response.data
+    if (companyName) {
+      localStorage.setItem('dayflow-company', JSON.stringify({ name: companyName, logo: logoUrl || null }))
     }
-    localStorage.setItem('dayflow-profiles', JSON.stringify([...extras, employee]))
-    if (companyName) localStorage.setItem('dayflow-company', JSON.stringify({ name: companyName, logo: logoDataUrl || null }))
-    persistAccounts([
-      ...accounts,
-      { email, loginId, password: loginId, mustChangePassword: true, pending: false },
-    ])
-    window.dispatchEvent(new Event('dayflow-profiles-updated'))
-    return { loginId, employee }
+
+    return {
+      loginId: signupData.loginId,
+      email: signupData.email,
+      role: signupData.role,
+      companyName: signupData.companyName,
+      message: response.message,
+    }
   }
 
   const value = useMemo(

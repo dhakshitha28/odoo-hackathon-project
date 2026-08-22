@@ -43,11 +43,25 @@ export default function RoleSelect() {
         <button
           type="button"
           disabled={!selected}
-          onClick={() => navigate('/signin', { state: { role: selected } })}
+          onClick={() => {
+            if (selected === 'admin') {
+              navigate('/signin', { state: { role: 'admin' } })
+            } else {
+              navigate('/signin', { state: { role: 'employee' } })
+            }
+          }}
           className="btn-primary w-full py-3 disabled:opacity-40"
         >
           Continue <ChevronRight className="h-4 w-4" />
         </button>
+        {selected === 'admin' && (
+          <p className="mt-3 text-center text-sm text-ink-muted">
+            New company?{' '}
+            <button type="button" className="font-semibold text-primary" onClick={() => navigate('/signup', { state: { role: 'admin' } })}>
+              Sign up here
+            </button>
+          </p>
+        )}
         <p className="mt-4 text-center text-sm text-ink-muted">
           {selected === 'employee' ? 'Accounts are created by HR — you cannot self-register.' : 'Admin and HR sign in with issued credentials.'}
         </p>

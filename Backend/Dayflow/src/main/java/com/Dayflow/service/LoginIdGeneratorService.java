@@ -33,12 +33,18 @@ public class LoginIdGeneratorService {
     }
 
     public String generateLoginId(Company company, String firstName, String lastName, int yearOfJoining) {
-        int serial = userRepository.countByCompanyIdAndYearOfJoining(company.getId(), yearOfJoining) + 1;
-        String serialPart = String.format("%04d", serial);
-
-        return company.getPrefix()
+        String base = company.getPrefix()
             + generateNameCode(firstName, lastName)
-            + yearOfJoining
-            + serialPart;
+            + yearOfJoining;
+
+        int serial = userRepository.countByCompanyIdAndYearOfJoining(company.getId(), yearOfJoining);
+        String loginId;
+
+        do {
+            serial++;
+            loginId = base + String.format("%04d", serial);
+        } while (userRepository.existsByLoginId(loginId));
+
+        return loginId;
     }
 }

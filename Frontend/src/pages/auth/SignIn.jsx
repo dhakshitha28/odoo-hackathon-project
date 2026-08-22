@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Lock, Mail, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, Lock, User, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import Logo from '../../components/brand/Logo'
 import Button from '../../components/ui/Button'
@@ -11,7 +11,7 @@ export default function SignIn() {
   const navigate = useNavigate()
   const location = useLocation()
   const portal = location.state?.role === 'employee' ? 'employee' : location.state?.role === 'admin' ? 'admin' : null
-  const [identifier, setIdentifier] = useState('')
+  const [loginId, setLoginId] = useState(location.state?.loginId || '')
   const [password, setPassword] = useState('')
   const [show, setShow] = useState(false)
   const [error, setError] = useState('')
@@ -24,36 +24,34 @@ export default function SignIn() {
   }
   const heading = portal ? titles[portal].title : 'Welcome to Dayflow'
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    if (!identifier.trim() || !password.trim()) {
-      setError('Enter Login ID / email and password')
+    if (!loginId.trim() || !password.trim()) {
+      setError('Enter Login ID and password')
       return
     }
+
     setLoading(true)
-    setTimeout(() => {
-      try {
-        const userData = login(identifier, password)
-        const isManager = userData.role === 'ADMIN' || userData.role === 'HR'
-        if (portal === 'employee' && isManager) {
-          logout()
-          setError('This is not an employee account. Use the Admin/HR login instead.')
-          setLoading(false)
-          return
-        }
-        if (portal === 'admin' && !isManager) {
-          logout()
-          setError('This account does not have Admin/HR access. Use the Employee login instead.')
-          setLoading(false)
-          return
-        }
-        navigate('/dashboard')
-      } catch (err) {
-        setError(err.message || 'Invalid Login ID or password')
+    try {
+      const userData = await login(loginId, password)
+      const isManager = userData.role === 'ADMIN' || userData.role === 'HR'
+      if (portal === 'employee' && isManager) {
+        logout()
+        setError('This is not an employee account. Use the Admin/HR login instead.')
+        return
       }
+      if (portal === 'admin' && !isManager) {
+        logout()
+        setError('This account does not have Admin/HR access. Use the Employee login instead.')
+        return
+      }
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message || 'Invalid Login ID or password')
+    } finally {
       setLoading(false)
-    }, 400)
+    }
   }
 
   return (
@@ -83,16 +81,16 @@ export default function SignIn() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label htmlFor="login-id" className="text-sm font-semibold">Login ID / Email</label>
+              <label htmlFor="login-id" className="text-sm font-semibold">Login ID</label>
               <div className="relative">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
                 <input
                   id="login-id"
                   type="text"
                   className="input pl-10"
-                  placeholder="Enter your Login ID or email"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="e.g. OITODO20260001"
+                  value={loginId}
+                  onChange={(e) => setLoginId(e.target.value)}
                   autoComplete="username"
                 />
               </div>
@@ -125,11 +123,15 @@ export default function SignIn() {
           <Link to="/" className="inline-flex items-center gap-1 font-semibold text-primary">
             <ArrowLeft className="h-4 w-4" /> Back to role selection
           </Link>
-          <p className="mt-2">
-            Don&apos;t have an Account?{' '}
-            <Link to="/signup" className="font-semibold text-primary">Sign Up</Link>
-          </p>
-          {portal === 'employee' && <p className="mt-2 text-xs">Employees cannot self-register. Ask HR or Admin for credentials.</p>}
+          {portal === 'admin' && (
+            <p className="mt-2">
+              Don&apos;t have an Account?{' '}
+              <Link to="/signup" state={{ role: 'admin' }} className="font-semibold text-primary">Sign Up</Link>
+            </p>
+          )}
+          {portal === 'employee' && (
+            <p className="mt-2 text-xs">Employees cannot self-register. Ask HR or Admin for credentials.</p>
+          )}
         </div>
       </div>
     </div>

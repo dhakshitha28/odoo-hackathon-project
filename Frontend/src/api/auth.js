@@ -1,15 +1,42 @@
-import { demoAccounts, employees } from '../data/mockData'
+import api from '../services/api'
 
-export async function loginRequest(identifier, password) {
-  const id = identifier.trim().toLowerCase()
-  const account = demoAccounts.find(
-    (a) => a.email.toLowerCase() === id || a.loginId.toLowerCase() === identifier.trim().toLowerCase(),
-  )
-  if (!account || account.password !== password) {
-    throw new Error('Invalid email or password')
+function getApiError(error) {
+  const data = error.response?.data
+  if (data?.message) return data.message
+  if (data?.data && typeof data.data === 'object') {
+    return Object.values(data.data).join(', ')
   }
-  const user = employees.find((e) => e.email === account.email)
-  return { token: 'mock-jwt-token', user: { ...user, mustChangePassword: account.mustChangePassword } }
+  return error.message || 'Something went wrong'
 }
 
-export default { loginRequest }
+export async function signupRequest(payload) {
+  try {
+    const { data } = await api.post('/auth/signup', payload)
+    if (!data.success) throw new Error(data.message || 'Signup failed')
+    return data
+  } catch (error) {
+    throw new Error(getApiError(error))
+  }
+}
+
+export async function loginRequest(loginId, password) {
+  try {
+    const { data } = await api.post('/auth/login', { loginId, password })
+    if (!data.success) throw new Error(data.message || 'Login failed')
+    return data.data
+  } catch (error) {
+    throw new Error(getApiError(error))
+  }
+}
+
+export async function verifyEmailRequest(token) {
+  try {
+    const { data } = await api.get('/auth/verify-email', { params: { token } })
+    if (!data.success) throw new Error(data.message || 'Verification failed')
+    return data.message
+  } catch (error) {
+    throw new Error(getApiError(error))
+  }
+}
+
+export default { signupRequest, loginRequest, verifyEmailRequest }

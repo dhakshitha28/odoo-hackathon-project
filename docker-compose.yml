@@ -1,0 +1,53 @@
+# WHERE: C:\Dayflow\docker-compose.yml
+# WHY:  Runs MySQL + Backend + Frontend together with one command
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: dayflow-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dayflow
+      MYSQL_USER: dayflow
+      MYSQL_PASSWORD: dayflow
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  backend:
+    build: ./Backend/Dayflow
+    container_name: dayflow-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dayflow?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: dayflow
+      SPRING_DATASOURCE_PASSWORD: dayflow
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_H2_CONSOLE_ENABLED: "false"
+      APP_BASE_URL: http://localhost:3000
+      JWT_SECRET: DayflowSecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLong2026
+      JWT_EXPIRATION: "86400000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build: ./Frontend
+    container_name: dayflow-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:

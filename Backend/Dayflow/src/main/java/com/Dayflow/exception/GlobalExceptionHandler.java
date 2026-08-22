@@ -1,6 +1,7 @@
 package com.Dayflow.exception;
 
 import com.Dayflow.dto.response.ApiResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -52,6 +53,26 @@ public class GlobalExceptionHandler {
             ApiResponse.<Void>builder()
                 .success(false)
                 .message("Invalid JSON body. Check your request format.")
+                .build()
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException ex) {
+        String message = "This email, company name, or login ID already exists. Please use different details.";
+
+        if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("login_id")) {
+            message = "Login ID already exists. Use a different name or restart the server to clear test data.";
+        } else if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("email")) {
+            message = "Email already registered. Please use a different email.";
+        } else if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("name")) {
+            message = "Company name already exists. Please use a different company name.";
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ApiResponse.<Void>builder()
+                .success(false)
+                .message(message)
                 .build()
         );
     }

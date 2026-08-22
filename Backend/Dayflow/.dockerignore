@@ -1,0 +1,8 @@
+# WHERE: C:\Dayflow\Backend\Dayflow\.dockerignore
+# WHY:  Excludes unnecessary files to speed up Docker build
+
+target/
+.mvn/
+*.md
+.git
+.gitignore
