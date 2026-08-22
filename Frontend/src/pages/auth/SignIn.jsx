@@ -6,17 +6,6 @@ import Logo from '../../components/brand/Logo'
 import Button from '../../components/ui/Button'
 import { Alert } from '../../components/ui/Alert'
 
-const demoIds = {
-  admin: [
-    { label: 'Admin', id: 'OISAAA20220001' },
-    { label: 'HR', id: 'OIMESS20220005' },
-  ],
-  employee: [
-    { label: 'Employee', id: 'OIRARR20220002' },
-    { label: 'First login', id: 'OIPRSS20220003' },
-  ],
-}
-
 export default function SignIn() {
   const { login, logout } = useAuth()
   const navigate = useNavigate()
@@ -92,24 +81,6 @@ export default function SignIn() {
             </p>
           )}
 
-          {portal && (
-            <div className="mb-5 rounded-xl border border-primary/15 bg-primary-50 p-3 text-xs">
-              <p className="font-semibold text-primary">Demo credentials — first password is the Login ID</p>
-              <div className="mt-2 space-y-1 font-mono text-[11px] text-on-surface">
-                {demoIds[portal].map((d) => (
-                  <button
-                    key={d.id}
-                    type="button"
-                    className="block w-full rounded-md px-1 py-0.5 text-left hover:bg-white"
-                    onClick={() => { setIdentifier(d.id); setPassword(d.id) }}
-                  >
-                    {d.label}: {d.id}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <label htmlFor="login-id" className="text-sm font-semibold">Login ID / Email</label>
@@ -119,7 +90,7 @@ export default function SignIn() {
                   id="login-id"
                   type="text"
                   className="input pl-10"
-                  placeholder="e.g. rahul@dayflow.com or OIRARR20220002"
+                  placeholder="Enter your Login ID or email"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   autoComplete="username"

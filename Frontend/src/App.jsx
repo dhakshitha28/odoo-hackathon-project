@@ -2,7 +2,6 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { HRProvider } from './context/HRContext'
 import { isManager } from './data/mockData'
-import RoleSelect from './pages/RoleSelect'
 import SignIn from './pages/auth/SignIn'
 import SignUp from './pages/auth/SignUp'
 import ChangePassword from './pages/auth/ChangePassword'
@@ -57,10 +56,10 @@ function ManagerRoute({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<PublicRoute><RoleSelect /></PublicRoute>} />
-      <Route path="/signin" element={<PublicRoute><SignIn /></PublicRoute>} />
-      <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/signup" element={<SignUp />} />
       <Route path="/change-password" element={<PasswordRoute><ChangePassword /></PasswordRoute>} />
+      <Route path="/" element={<SignIn />} />
       <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/employees" element={<ManagerRoute><TeamDashboard /></ManagerRoute>} />
@@ -74,7 +73,7 @@ function AppRoutes() {
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/signin" replace />} />
     </Routes>
   )
 }

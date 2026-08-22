@@ -5,14 +5,14 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#714B67',
-          50: '#F4ECF2',
-          100: '#E4D0DE',
-          200: '#C9A4BB',
-          300: '#A57493',
-          400: '#714B67',
-          500: '#5A3B52',
-          600: '#432B3D',
+          DEFAULT: '#c2652a',
+          50: '#fdf5ee',
+          100: '#fbe8d5',
+          200: '#f6ceaa',
+          300: '#f0ad74',
+          400: '#e8863d',
+          500: '#c2652a',
+          600: '#a44e1e',
         },
         ink: {
           DEFAULT: '#1C1917',
@@ -55,8 +55,8 @@ export default {
         'status-present': '#16A34A',
         'status-absent': '#CA8A04',
         'status-break': '#CA8A04',
-        'primary-container': '#F4ECF2',
-        'on-primary-container': '#432B3D',
+        'primary-container': '#fbe8d5',
+        'on-primary-container': '#4a2008',
         secondary: {
           DEFAULT: '#78716C',
           container: '#F0EBE4',
@@ -70,13 +70,13 @@ export default {
         body: ['"Plus Jakarta Sans"', 'sans-serif'],
         label: ['"Plus Jakarta Sans"', 'sans-serif'],
       },
-      boxShadow: {
-        soft: '0 1px 2px rgba(28, 25, 23, 0.04), 0 8px 24px rgba(113, 75, 103, 0.06)',
-        card: '0 1px 2px rgba(28, 25, 23, 0.04), 0 8px 24px rgba(113, 75, 103, 0.06)',
-        'card-hover': '0 12px 32px rgba(113, 75, 103, 0.12)',
-        dropdown: '0 16px 40px rgba(28, 25, 23, 0.12)',
-        elevated: '0 20px 50px rgba(113, 75, 103, 0.16)',
-      },
+        boxShadow: {
+          soft: '0 1px 2px rgba(28, 25, 23, 0.04), 0 8px 24px rgba(194, 101, 42, 0.06)',
+          card: '0 1px 2px rgba(28, 25, 23, 0.04), 0 8px 24px rgba(194, 101, 42, 0.06)',
+          'card-hover': '0 12px 32px rgba(194, 101, 42, 0.12)',
+          dropdown: '0 16px 40px rgba(28, 25, 23, 0.12)',
+          elevated: '0 20px 50px rgba(194, 101, 42, 0.16)',
+        },
       keyframes: {
         'fade-in': {
           from: { opacity: '0', transform: 'translateY(8px)' },

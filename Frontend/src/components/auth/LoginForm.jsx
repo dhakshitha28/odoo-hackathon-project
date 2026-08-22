@@ -26,7 +26,7 @@ export default function LoginForm({ onSubmit, loading, error, initialIdentifier 
             id="login-id"
             type="text"
             autoComplete="username"
-            placeholder="OIRARR20220002 or rahul@dayflow.com"
+            placeholder="Enter your Login ID or email"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             className="input pl-10"
@@ -43,7 +43,7 @@ export default function LoginForm({ onSubmit, loading, error, initialIdentifier 
             id="password"
             type={show ? 'text' : 'password'}
             autoComplete="current-password"
-            placeholder="OIRARR20220002"
+            placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="input pl-10 pr-10"
@@ -57,7 +57,6 @@ export default function LoginForm({ onSubmit, loading, error, initialIdentifier 
             {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
-        <p className="text-xs text-ink-muted">First password is the Login ID, not a custom word like admin123.</p>
       </div>
       <Button type="submit" className="w-full py-3" disabled={loading}>
         {loading ? 'Signing in…' : 'Sign In'}

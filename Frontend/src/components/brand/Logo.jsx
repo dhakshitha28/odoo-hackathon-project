@@ -1,7 +1,7 @@
 export default function Logo({ className = 'w-10 h-10' }) {
   return (
     <svg className={className} viewBox="0 0 40 40" fill="none" aria-hidden="true">
-      <rect width="40" height="40" rx="12" fill="#714B67" />
+      <rect width="40" height="40" rx="12" fill="#c2652a" />
       <path
         d="M10 22c4-8 8-8 10 0s6 8 10 0"
         stroke="white"
