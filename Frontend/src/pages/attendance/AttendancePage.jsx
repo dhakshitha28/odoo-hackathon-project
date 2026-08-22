@@ -1,44 +1,187 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { isManager } from '../../api/unwrap'
 import { fetchEmployeeAttendance } from '../../api/employee'
+import { getAdminAttendance } from '../../api/attendance'
 import { Alert } from '../../components/ui/Alert'
 
-export default function AttendancePage() {
-  const { user } = useAuth()
-  const manager = isManager(user.role)
+const badge = {
+  PRESENT: 'bg-present/10 text-present',
+  ABSENT: 'bg-absent/10 text-absent',
+  LEAVE: 'bg-leave/10 text-leave',
+  HALF_DAY: 'bg-primary-50 text-primary',
+}
+
+function toDateInput(date = new Date()) {
+  return date.toISOString().slice(0, 10)
+}
+
+function shiftDate(dateStr, days) {
+  const d = new Date(`${dateStr}T12:00:00`)
+  d.setDate(d.getDate() + days)
+  return toDateInput(d)
+}
+
+function formatDayHeader(dateStr) {
+  const d = new Date(`${dateStr}T12:00:00`)
+  const day = d.getDate()
+  const rest = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+  return `${day}, ${rest}`
+}
+
+function formatClock(iso) {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+function formatTime(value) {
+  return value ? new Date(value).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—'
+}
+
+function AdminAttendanceView() {
+  const [date, setDate] = useState(toDateInput)
+  const [search, setSearch] = useState('')
+  const [query, setQuery] = useState('')
+  const [records, setRecords] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(search.trim()), 300)
+    return () => clearTimeout(timer)
+  }, [search])
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const data = await getAdminAttendance(date, query)
+      setRecords(data.records || [])
+    } catch (err) {
+      setError(err.message)
+      setRecords([])
+    } finally {
+      setLoading(false)
+    }
+  }, [date, query])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const dateLabel = useMemo(() => formatDayHeader(date), [date])
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <h1 className="text-3xl font-extrabold tracking-tight">Attendance</h1>
+        <div className="relative w-full max-w-md lg:mx-auto">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+          <input
+            className="input w-full pl-10"
+            placeholder="Search employee name or ID"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-outline-variant bg-white text-ink-muted hover:bg-cream"
+          onClick={() => setDate((d) => shiftDate(d, -1))}
+          aria-label="Previous day"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-outline-variant bg-white text-ink-muted hover:bg-cream"
+          onClick={() => setDate((d) => shiftDate(d, 1))}
+          aria-label="Next day"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+        <label className="relative">
+          <input
+            type="date"
+            className="input pr-10"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </label>
+        <span className="rounded-xl bg-cream px-4 py-2 text-sm font-semibold text-ink-muted">Day</span>
+        <button
+          type="button"
+          className="rounded-xl border border-outline-variant bg-white px-4 py-2 text-sm font-semibold text-primary hover:bg-cream"
+          onClick={() => setDate(toDateInput())}
+        >
+          Today
+        </button>
+      </div>
+
+      {error && <Alert variant="destructive" description={error} />}
+
+      <div className="card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Emp</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+                <th>Work Hours</th>
+                <th>Extra hours</th>
+              </tr>
+              <tr className="bg-cream/60">
+                <th colSpan={5} className="text-left text-sm font-bold normal-case tracking-normal text-on-surface">
+                  {dateLabel}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="py-16 text-center text-ink-muted">Loading attendance…</td>
+                </tr>
+              ) : records.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-16 text-center text-ink-muted">No employees found for this day.</td>
+                </tr>
+              ) : (
+                records.map((record) => (
+                  <tr key={record.employeeId}>
+                    <td className="font-medium">{record.employeeName}</td>
+                    <td className="text-ink-muted">{formatClock(record.checkInTime)}</td>
+                    <td className="text-ink-muted">{formatClock(record.checkOutTime)}</td>
+                    <td className="text-ink-muted">{record.workHours || '—'}</td>
+                    <td className="text-ink-muted">{record.extraHours || '—'}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EmployeeAttendanceView() {
   const now = new Date()
   const [month, setMonth] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`)
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (manager) return
     const [year, m] = month.split('-').map(Number)
     fetchEmployeeAttendance(year, m)
       .then(setData)
       .catch((err) => setError(err.message))
-  }, [month, manager])
-
-  const badge = {
-    PRESENT: 'bg-present/10 text-present',
-    ABSENT: 'bg-absent/10 text-absent',
-    LEAVE: 'bg-leave/10 text-leave',
-    HALF_DAY: 'bg-primary-50 text-primary',
-  }
-
-  if (manager) {
-    return (
-      <div className="space-y-4">
-        <h1 className="text-3xl font-extrabold tracking-tight">Attendance</h1>
-        <p className="text-sm text-ink-muted">
-          Organization-wide attendance history is not exposed by the current backend. Use Check IN / Check OUT in the bar above. Employee accounts can view their own records here.
-        </p>
-      </div>
-    )
-  }
-
-  const formatTime = (value) => (value ? new Date(value).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—')
+  }, [month])
 
   return (
     <div className="space-y-6">
@@ -85,7 +228,11 @@ export default function AttendancePage() {
                 <td>{formatTime(record.checkOutTime)}</td>
                 <td>{record.workHours || '—'}</td>
                 <td>{record.extraHours || '—'}</td>
-                <td><span className={`badge ${badge[record.status] || 'bg-cream'}`}>{record.status}</span></td>
+                <td>
+                  <span className={`badge ${badge[record.status] || 'bg-cream'}`}>
+                    {record.status?.replace('_', ' ') || '—'}
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -93,4 +240,11 @@ export default function AttendancePage() {
       </div>
     </div>
   )
+}
+
+export default function AttendancePage() {
+  const { user } = useAuth()
+  const manager = isManager(user?.role)
+
+  return manager ? <AdminAttendanceView /> : <EmployeeAttendanceView />
 }
