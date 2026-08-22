@@ -1,6 +1,6 @@
 import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router-dom'
-import { Avatar } from '../ui/Avatar'
+import { Avatar } from '../../components/ui/Avatar'
 import { employees, attendanceRecords, leaveRequests, activityLog, departments } from '../../data/mockData'
 import { Users, Calendar, TrendingUp, CheckCircle, ChevronRight } from 'lucide-react'
 

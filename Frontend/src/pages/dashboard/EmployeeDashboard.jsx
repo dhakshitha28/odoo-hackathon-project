@@ -1,8 +1,8 @@
 import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router-dom'
-import { Avatar } from '../ui/Avatar'
-import { getAttendance, getEmployeeLeaves, getEmployeeSalary, activityLog } from '../../data/mockData'
-import { Clock, Calendar, Wallet, TrendingUp, User, ChevronRight } from 'lucide-react'
+import { Avatar } from '../../components/ui/Avatar'
+import { getEmployeeAttendance as getAttendance, getEmployeeLeaves, getEmployeeSalary, activityLog } from '../../data/mockData'
+import { Clock, Calendar, Wallet, TrendingUp, User } from 'lucide-react'
 
 export default function EmployeeDashboard() {
   const { user } = useAuth()

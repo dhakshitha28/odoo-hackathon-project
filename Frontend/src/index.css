@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Manrope:wght@200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,41 +8,45 @@
   * {
     border-color: theme('colors.outline.variant');
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     background-color: theme('colors.background');
     color: theme('colors.on-surface');
-    font-family: theme('fontFamily.body');
+    font-family: theme('fontFamily.sans');
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    min-height: max(884px, 100dvh);
+    min-height: 100dvh;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: theme('fontFamily.headline');
+    letter-spacing: -0.03em;
   }
 }
 
 @layer components {
   .soft-shadow {
-    box-shadow: 0 2px 16px rgba(58, 48, 42, 0.04);
+    box-shadow: 0 1px 2px rgba(28, 25, 23, 0.04), 0 8px 24px rgba(113, 75, 103, 0.06);
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-label text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-label text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-primary text-on-primary hover:bg-primary/90 shadow-sm;
+    @apply btn bg-primary text-on-primary hover:bg-primary-500 shadow-sm;
   }
   .btn-secondary {
-    @apply btn bg-surface border border-outline-variant text-on-surface hover:bg-surface-container;
+    @apply btn bg-white border border-outline-variant text-on-surface hover:bg-cream;
   }
   .btn-ghost {
-    @apply btn hover:bg-surface-container text-on-surface;
+    @apply btn hover:bg-primary-50 text-on-surface;
   }
   .btn-destructive {
     @apply btn bg-error text-on-error hover:bg-error/90;
   }
   .btn-success {
-    @apply btn bg-status-present text-white hover:bg-status-present/90;
+    @apply btn bg-present text-white hover:bg-present/90;
   }
   .btn-sm {
     @apply px-3 py-1.5 text-xs;
@@ -61,68 +65,38 @@
   }
 
   .input {
-    @apply block w-full px-4 py-3 border-b-2 border-outline-variant bg-surface-container-lowest text-on-surface font-body placeholder-outline-variant focus:border-primary focus:ring-0 focus:outline-none transition-colors rounded-none;
-  }
-  .input-with-icon {
-    @apply pl-10;
-  }
-  .input-rounder {
-    @apply rounded-xl border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary;
+    @apply block w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface font-body placeholder-ink-faint focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all;
   }
 
   .card {
-    @apply bg-surface-container-lowest rounded-xl border border-outline-variant/60 soft-shadow;
-  }
-  .card-flat {
-    @apply bg-surface-container-lowest rounded-xl border border-outline-variant/40;
-  }
-  .card-hover {
-    @apply card transition-shadow hover:border-outline-variant cursor-pointer;
+    @apply bg-white rounded-2xl border border-outline-variant/80 soft-shadow;
   }
 
   .badge {
     @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-label font-semibold;
   }
-  .badge-present {
-    @apply badge bg-surface-container text-on-surface border border-outline-variant/50;
-  }
-  .badge-absent {
-    @apply badge bg-error-container text-on-error-container border border-tertiary-fixed-dim/30;
-  }
-  .badge-pending {
-    @apply badge bg-primary-50 text-primary border border-primary-100/30;
-  }
-  .badge-approved {
-    @apply badge bg-surface-container text-on-surface-variant border border-outline-variant/60;
-  }
-  .badge-department {
-    @apply badge bg-primary-50 text-primary border-none;
-  }
 
   .status-dot {
     @apply w-2.5 h-2.5 rounded-full;
   }
-  .status-present { @apply bg-status-present; }
-  .status-absent { @apply bg-status-absent; }
-  .status-break { @apply bg-status-break; }
+  .status-present { @apply bg-present; }
+  .status-absent { @apply bg-absent; }
+  .status-break { @apply bg-absent; }
 
-  .table-wrapper {
-    @apply w-full overflow-auto;
-  }
   .table {
     @apply w-full text-sm;
   }
   .table thead {
-    @apply border-b border-outline-variant/40;
+    @apply border-b border-outline-variant/60;
   }
   .table th {
-    @apply py-3 px-4 text-left font-label text-xs font-semibold text-on-surface-variant uppercase tracking-wider;
+    @apply py-3 px-4 text-left font-label text-[11px] font-semibold text-ink-muted uppercase tracking-wider;
   }
   .table td {
     @apply py-4 px-4;
   }
   .table tbody tr {
-    @apply border-b border-outline-variant/20 transition-colors hover:bg-surface-container-low/50;
+    @apply border-b border-outline-variant/40 transition-colors hover:bg-cream/60;
   }
 
   .chip {
@@ -132,10 +106,26 @@
     @apply chip bg-primary text-on-primary shadow-sm;
   }
   .chip-inactive {
-    @apply chip bg-surface-container-lowest text-on-surface border border-outline-variant hover:bg-surface-container-low;
+    @apply chip bg-white text-on-surface border border-outline-variant hover:bg-cream;
+  }
+
+  .badge-present {
+    @apply badge bg-present/10 text-present;
+  }
+  .badge-absent {
+    @apply badge bg-absent/10 text-absent;
+  }
+  .badge-pending {
+    @apply badge bg-primary-50 text-primary;
+  }
+  .badge-approved {
+    @apply badge bg-cream text-ink-muted;
+  }
+  .badge-department {
+    @apply badge bg-primary-50 text-primary;
   }
 
   .skeleton {
-    @apply animate-pulse rounded-lg bg-surface-container;
+    @apply animate-pulse rounded-lg bg-cream;
   }
 }

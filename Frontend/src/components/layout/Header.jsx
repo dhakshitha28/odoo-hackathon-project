@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { Avatar } from '../ui/Avatar'
-import { getUnreadNotificationCount } from '../../data/mockData'
+import { notifications } from '../../data/mockData'
 import { Bell, ChevronDown, LogOut, User, Settings, Mountain } from 'lucide-react'
 
 export default function Header({ title }) {
@@ -10,7 +10,7 @@ export default function Header({ title }) {
   const navigate = useNavigate()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
-  const unreadCount = getUnreadNotificationCount()
+  const unreadCount = notifications.filter(n => !n.read).length
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -64,7 +64,7 @@ export default function Header({ title }) {
             <Avatar firstName={user?.firstName} lastName={user?.lastName} size="sm" />
             <div className="text-left hidden sm:block">
               <p className="text-sm font-medium font-label leading-none">{user?.firstName} {user?.lastName}</p>
-              <p className="text-xs text-on-surface-variant font-label mt-0.5">{user?.role === 'ADMIN' ? 'Admin' : 'Employee'}</p>
+              <p className="text-xs text-on-surface-variant font-label mt-0.5">{user?.role === 'ADMIN' ? 'Admin' : user?.role === 'HR' ? 'HR' : 'Employee'}</p>
             </div>
             <ChevronDown className="h-4 w-4 text-on-surface-variant" />
           </button>

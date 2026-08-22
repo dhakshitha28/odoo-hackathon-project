@@ -41,8 +41,8 @@ const bottomLinks = [
 export default function Sidebar({ collapsed, onToggle }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const isAdmin = user?.role === 'ADMIN'
-  const links = isAdmin ? adminLinks : employeeLinks
+  const isManagerRole = user?.role === 'ADMIN' || user?.role === 'HR'
+  const links = isManagerRole ? adminLinks : employeeLinks
 
   const handleLogout = () => {
     logout()

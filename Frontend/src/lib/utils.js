@@ -1,8 +1,18 @@
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
+import { nameCode } from './employeeId'
+
 export function cn(...inputs) {
   return twMerge(clsx(inputs))
+}
+
+export function generateLoginId(firstName, lastName, yearOfJoining, serialNumber) {
+  return `OI${nameCode(firstName, lastName)}${yearOfJoining}${String(serialNumber).padStart(4, '0')}`
+}
+
+export function generatePassword(loginId) {
+  return loginId
 }
 
 export function formatCurrency(amount) {

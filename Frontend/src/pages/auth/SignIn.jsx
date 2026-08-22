@@ -1,129 +1,164 @@
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Eye, EyeOff, Lock, Mail, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import api from '../../services/api'
+import Logo from '../../components/brand/Logo'
 import Button from '../../components/ui/Button'
 import { Alert } from '../../components/ui/Alert'
-import { Mountain, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+
+const demoIds = {
+  admin: [
+    { label: 'Admin', id: 'OISAAA20220001' },
+    { label: 'HR', id: 'OIMESS20220005' },
+  ],
+  employee: [
+    { label: 'Employee', id: 'OIRARR20220002' },
+    { label: 'First login', id: 'OIPRSS20220003' },
+  ],
+}
 
 export default function SignIn() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const portal = location.state?.role === 'employee' ? 'employee' : location.state?.role === 'admin' ? 'admin' : null
+  const [identifier, setIdentifier] = useState('')
+  const [password, setPassword] = useState('')
+  const [show, setShow] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const successMessage = location.state?.message
 
-  const handleSubmit = async (e) => {
+  const titles = {
+    employee: { title: 'Employee Login', sub: 'Check in, view attendance and request time off.' },
+    admin: { title: 'Admin / HR Login', sub: 'Manage people, approve leave and run payroll.' },
+  }
+  const heading = portal ? titles[portal].title : 'Welcome to Dayflow'
+
+  const handleSubmit = (e) => {
     e.preventDefault()
     setError('')
-    if (!email.trim() || !password.trim()) {
-      setError('Please fill in all fields')
+    if (!identifier.trim() || !password.trim()) {
+      setError('Enter Login ID / email and password')
       return
     }
     setLoading(true)
-    try {
-      const { data } = await api.post('/auth/login', { email, password })
-      login(data.user, data.token)
-      navigate('/dashboard')
-    } catch (err) {
-      setError(err.response?.data?.message || 'Invalid credentials. Please try again.')
-    } finally {
+    setTimeout(() => {
+      try {
+        const userData = login(identifier, password)
+        const isManager = userData.role === 'ADMIN' || userData.role === 'HR'
+        if (portal === 'employee' && isManager) {
+          logout()
+          setError('This is not an employee account. Use the Admin/HR login instead.')
+          setLoading(false)
+          return
+        }
+        if (portal === 'admin' && !isManager) {
+          logout()
+          setError('This account does not have Admin/HR access. Use the Employee login instead.')
+          setLoading(false)
+          return
+        }
+        navigate('/dashboard')
+      } catch (err) {
+        setError(err.message || 'Invalid Login ID or password')
+      }
       setLoading(false)
-    }
+    }, 400)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 md:p-8 bg-background relative overflow-hidden">
-      {/* Decorative background */}
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute w-[800px] h-[800px] bg-primary-50 rounded-full blur-[120px] opacity-30 -top-1/4 -left-1/4" />
-        <div className="absolute w-[600px] h-[600px] bg-secondary-container rounded-full blur-[100px] opacity-30 bottom-0 right-0" />
+    <div className="relative flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-24 -top-24 h-[28rem] w-[28rem] rounded-full bg-primary/10 blur-3xl" />
       </div>
-
-      <div className="w-full max-w-md bg-surface-container-lowest border border-outline-variant rounded-xl shadow-soft overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="pt-10 pb-6 px-6 sm:px-8 text-center border-b border-outline-variant bg-surface-container-low">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-50 text-primary mb-6">
-            <Mountain className="w-8 h-8" />
-          </div>
-          <h1 className="font-headline text-3xl font-semibold text-on-surface mb-2">HR Connect</h1>
-          <p className="font-body text-sm text-on-surface-variant">Sign in to your account</p>
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-outline-variant bg-white shadow-elevated">
+        <div className="border-b border-outline-variant px-8 pb-6 pt-8 text-center">
+          <div className="mb-4 inline-flex"><Logo className="h-12 w-12" /></div>
+          <h1 className="text-3xl font-extrabold tracking-tight">{heading}</h1>
+          <p className="mt-2 text-sm text-ink-muted">
+            {portal ? titles[portal].sub : 'Every workday, perfectly aligned.'}
+          </p>
         </div>
 
-        {/* Form */}
-        <div className="p-6 sm:px-8 sm:py-8 flex-1">
-          {successMessage && <Alert variant="success" description={successMessage} className="mb-6" />}
-          {error && <Alert variant="destructive" description={error} className="mb-6" />}
+        <div className="px-8 py-6">
+          {successMessage && <Alert variant="success" description={successMessage} className="mb-4" />}
+          {error && <Alert variant="destructive" description={error} className="mb-4" />}
+
+          {!portal && (
+            <p className="mb-5 rounded-xl border border-primary/15 bg-primary-50 p-3 text-xs text-ink-muted">
+              Not sure which account you have?{' '}
+              <Link to="/" className="font-semibold text-primary">Choose your role first</Link>
+            </p>
+          )}
+
+          {portal && (
+            <div className="mb-5 rounded-xl border border-primary/15 bg-primary-50 p-3 text-xs">
+              <p className="font-semibold text-primary">Demo credentials — first password is the Login ID</p>
+              <div className="mt-2 space-y-1 font-mono text-[11px] text-on-surface">
+                {demoIds[portal].map((d) => (
+                  <button
+                    key={d.id}
+                    type="button"
+                    className="block w-full rounded-md px-1 py-0.5 text-left hover:bg-white"
+                    onClick={() => { setIdentifier(d.id); setPassword(d.id) }}
+                  >
+                    {d.label}: {d.id}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="block font-label text-sm font-semibold text-on-surface">Login ID / Email</label>
+              <label htmlFor="login-id" className="text-sm font-semibold">Login ID / Email</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
-                  <Mail className="w-5 h-5" />
-                </div>
+                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
                 <input
-                  type="email"
-                  placeholder="e.g. 01JD2024001 or email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="login-id"
+                  type="text"
                   className="input pl-10"
-                  autoComplete="email"
+                  placeholder="e.g. rahul@dayflow.com or OIRARR20220002"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  autoComplete="username"
                 />
               </div>
             </div>
-
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="block font-label text-sm font-semibold text-on-surface">Password</label>
-                <a className="font-label text-sm font-medium text-primary hover:text-primary-400 transition-colors" href="#">Forgot Password?</a>
-              </div>
+              <label htmlFor="password" className="text-sm font-semibold">Password</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
-                  <Lock className="w-5 h-5" />
-                </div>
+                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
                 <input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
+                  id="password"
+                  type={show ? 'text' : 'password'}
+                  className="input pl-10 pr-10"
+                  placeholder="••••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input pl-10 pr-10"
                   autoComplete="current-password"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint" onClick={() => setShow((v) => !v)} aria-label="Show password">
+                  {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
-
-            <div className="pt-2">
-              <Button type="submit" className="w-full btn-rounded py-3" disabled={loading}>
-                {loading ? (
-                  <div className="h-4 w-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
-                ) : (
-                  'Sign In'
-                )}
-              </Button>
-            </div>
+            <Button type="submit" rounded className="w-full py-3" disabled={loading}>
+              {loading ? 'Signing in…' : 'SIGN IN'}
+            </Button>
           </form>
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-5 bg-surface-container-low border-t border-outline-variant text-center">
-          <p className="font-body text-sm text-on-surface-variant">
-            Don&apos;t have an account?{' '}
-            <Link to="/signup" className="font-label text-sm font-semibold text-primary hover:text-primary-400 ml-1 transition-colors">
-              Sign Up
-            </Link>
+        <div className="border-t border-outline-variant bg-cream/50 px-8 py-5 text-center text-sm text-ink-muted">
+          <Link to="/" className="inline-flex items-center gap-1 font-semibold text-primary">
+            <ArrowLeft className="h-4 w-4" /> Back to role selection
+          </Link>
+          <p className="mt-2">
+            Don&apos;t have an Account?{' '}
+            <Link to="/signup" className="font-semibold text-primary">Sign Up</Link>
           </p>
+          {portal === 'employee' && <p className="mt-2 text-xs">Employees cannot self-register. Ask HR or Admin for credentials.</p>}
         </div>
       </div>
     </div>

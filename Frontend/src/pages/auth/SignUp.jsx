@@ -1,139 +1,138 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import api from '../../services/api'
-import Button from '../ui/Button'
-import { Alert } from '../ui/Alert'
-import { Mountain, Mail, Lock, Eye, EyeOff, User, Phone, Shield } from 'lucide-react'
+import { Building2, Eye, EyeOff, Mail, Phone, Upload, User } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
+import Logo from '../../components/brand/Logo'
+import Button from '../../components/ui/Button'
+import { Alert } from '../../components/ui/Alert'
 
 export default function SignUp() {
-  const [form, setForm] = useState({
-    firstName: '', lastName: '', email: '', phone: '', role: 'EMPLOYEE', password: '', confirmPassword: '',
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const { registerCompany } = useAuth()
   const navigate = useNavigate()
+  const [form, setForm] = useState({
+    companyName: '', name: '', email: '', phone: '', password: '', confirm: '',
+  })
+  const [logo, setLogo] = useState(null)
+  const [show, setShow] = useState(false)
+  const [error, setError] = useState('')
+  const [created, setCreated] = useState(null)
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+  const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
 
-  const validate = () => {
-    if (!form.firstName.trim() || !form.lastName.trim()) return 'Full name is required'
-    if (!form.email.trim()) return 'Email is required'
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'Enter a valid email'
-    if (form.password.length < 8) return 'Password must be at least 8 characters'
-    if (!/[A-Z]/.test(form.password)) return 'Password must contain an uppercase letter'
-    if (!/[0-9]/.test(form.password)) return 'Password must contain a number'
-    if (form.password !== form.confirmPassword) return 'Passwords do not match'
-    return null
+  const onLogo = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setLogo(reader.result)
+    reader.readAsDataURL(file)
   }
 
-  const handleSubmit = async (e) => {
+  const submit = (e) => {
     e.preventDefault()
     setError('')
-    const v = validate()
-    if (v) { setError(v); return }
-    setLoading(true)
+    if (!form.companyName.trim() || !form.name.trim() || !form.email.trim() || !form.phone.trim()) {
+      setError('Please fill company name, your name, email, and phone')
+      return
+    }
+    if (form.password && form.password !== form.confirm) {
+      setError('Passwords do not match')
+      return
+    }
     try {
-      await api.post('/auth/signup', {
-        firstName: form.firstName, lastName: form.lastName, email: form.email,
-        phone: form.phone, role: form.role, password: form.password,
+      const result = registerCompany({
+        companyName: form.companyName,
+        logoDataUrl: logo,
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
       })
-      navigate('/signin', { state: { message: 'Account created successfully! Please sign in.' } })
+      setCreated(result)
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed.')
-    } finally { setLoading(false) }
+      setError(err.message)
+    }
   }
 
-  const Field = ({ label, name, type = 'text', icon: Icon, placeholder, autoComplete }) => (
-    <div className="space-y-2">
-      <label className="block font-label text-sm font-semibold text-on-surface">{label}</label>
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline"><Icon className="w-5 h-5" /></div>
-        <input name={name} type={type} placeholder={placeholder} value={form[name]} onChange={handleChange} className="input pl-10" autoComplete={autoComplete} />
-      </div>
-    </div>
-  )
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 md:p-8 bg-background relative overflow-hidden">
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute w-[800px] h-[800px] bg-primary-50 rounded-full blur-[120px] opacity-30 -top-1/4 -left-1/4" />
-        <div className="absolute w-[600px] h-[600px] bg-secondary-container rounded-full blur-[100px] opacity-30 bottom-0 right-0" />
-      </div>
-
-      <div className="w-full max-w-md bg-surface-container-lowest border border-outline-variant rounded-xl shadow-soft overflow-hidden flex flex-col">
-        <div className="pt-10 pb-6 px-6 sm:px-8 text-center border-b border-outline-variant bg-surface-container-low">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-50 text-primary mb-6">
-            <Mountain className="w-8 h-8" />
-          </div>
-          <h1 className="font-headline text-3xl font-semibold text-on-surface mb-2">HR Connect</h1>
-          <p className="font-body text-sm text-on-surface-variant">Create your account</p>
+    <div className="relative flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-outline-variant bg-white shadow-elevated">
+        <div className="border-b border-outline-variant px-8 pb-6 pt-8 text-center">
+          <div className="mb-4 inline-flex"><Logo className="h-12 w-12" /></div>
+          <h1 className="text-3xl font-extrabold tracking-tight">Create company</h1>
+          <p className="mt-2 text-sm text-ink-muted">For Admin / company setup only. Employees are added by HR.</p>
         </div>
 
-        <div className="p-6 sm:px-8 sm:py-8 flex-1">
-          {error && <Alert variant="destructive" description={error} className="mb-6" />}
+        <div className="px-8 py-6">
+          {error && <Alert variant="destructive" description={error} className="mb-4" />}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="First Name" name="firstName" icon={User} placeholder="First name" autoComplete="given-name" />
-              <Field label="Last Name" name="lastName" icon={User} placeholder="Last name" autoComplete="family-name" />
-            </div>
-            <Field label="Email Address" name="email" type="email" icon={Mail} placeholder="you@company.com" autoComplete="email" />
-            <Field label="Phone Number" name="phone" type="tel" icon={Phone} placeholder="+91 98765 43210" autoComplete="tel" />
-
-            <div className="space-y-2">
-              <label className="block font-label text-sm font-semibold text-on-surface">Role</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline"><Shield className="w-5 h-5" /></div>
-                <select name="role" value={form.role} onChange={handleChange} className="input pl-10 appearance-none bg-[url('data:image/svg+xml,%3Csvg%20width=%2212%22%20height=%2212%22%20viewBox=%220%200%2012%2012%22%20fill=%22none%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath%20d=%22M3%204.5L6%207.5L9%204.5%22%20stroke=%22%239a9088%22%20stroke-width=%221.5%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22/%3E%3C/svg%3E')] bg-[length:12px] bg-[right_12px_center] bg-no-repeat">
-                  <option value="EMPLOYEE">Employee</option>
-                  <option value="ADMIN">Admin / HR Officer</option>
-                </select>
+          {created ? (
+            <div className="space-y-4">
+              <Alert variant="success" title="Account created" description="Use the generated Login ID as your first password, then change it after sign in." />
+              <div className="rounded-xl bg-cream p-4 font-mono text-sm">
+                <p>Login ID: {created.loginId}</p>
+                <p>First password: {created.loginId}</p>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block font-label text-sm font-semibold text-on-surface">Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline"><Lock className="w-5 h-5" /></div>
-                <input name="password" type={showPassword ? 'text' : 'password'} placeholder="Min. 8 characters" value={form.password} onChange={handleChange} className="input pl-10 pr-10" autoComplete="new-password" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface transition-colors">
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              <div className="flex gap-3 mt-1">
-                <span className={`text-xs font-label ${form.password.length >= 8 ? 'text-status-present' : 'text-on-surface-variant'}`}>8+ chars</span>
-                <span className={`text-xs font-label ${/[A-Z]/.test(form.password) ? 'text-status-present' : 'text-on-surface-variant'}`}>Uppercase</span>
-                <span className={`text-xs font-label ${/[0-9]/.test(form.password) ? 'text-status-present' : 'text-on-surface-variant'}`}>Number</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block font-label text-sm font-semibold text-on-surface">Confirm Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline"><Lock className="w-5 h-5" /></div>
-                <input name="confirmPassword" type={showPassword ? 'text' : 'password'} placeholder="Re-enter your password" value={form.confirmPassword} onChange={handleChange} className="input pl-10" autoComplete="new-password" />
-              </div>
-              {form.confirmPassword && (
-                <p className={`text-xs font-label ${form.password === form.confirmPassword ? 'text-status-present' : 'text-error'}`}>
-                  {form.password === form.confirmPassword ? 'Passwords match' : 'Passwords do not match'}
-                </p>
-              )}
-            </div>
-
-            <div className="pt-2">
-              <Button type="submit" className="w-full btn-rounded py-3" disabled={loading}>
-                {loading ? <div className="h-4 w-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" /> : 'Create Account'}
+              <Button className="w-full py-3" rounded onClick={() => navigate('/signin', { state: { message: `Sign in with ${created.loginId}` } })}>
+                Go to Sign In
               </Button>
             </div>
-          </form>
+          ) : (
+            <form onSubmit={submit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Company name</label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Building2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                    <input name="companyName" className="input pl-10" placeholder="Odoo India" value={form.companyName} onChange={onChange} />
+                  </div>
+                  <label className="flex h-[50px] w-[50px] cursor-pointer items-center justify-center rounded-xl border border-dashed border-primary text-primary hover:bg-primary-50" title="Upload logo">
+                    {logo ? <img src={logo} alt="" className="h-10 w-10 rounded-lg object-cover" /> : <Upload className="h-5 w-5" />}
+                    <input type="file" accept="image/*" className="hidden" onChange={onLogo} />
+                  </label>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Name</label>
+                <div className="relative">
+                  <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                  <input name="name" className="input pl-10" placeholder="John Doe" value={form.name} onChange={onChange} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Email</label>
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                  <input name="email" type="email" className="input pl-10" placeholder="you@company.com" value={form.email} onChange={onChange} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Phone</label>
+                <div className="relative">
+                  <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                  <input name="phone" className="input pl-10" placeholder="+91 98765 43210" value={form.phone} onChange={onChange} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Password</label>
+                <p className="text-xs text-ink-muted">Ignored for first login. The system generates the Login ID as the first password.</p>
+                <div className="relative">
+                  <input name="password" type={show ? 'text' : 'password'} className="input pr-10" placeholder="Optional" value={form.password} onChange={onChange} />
+                  <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint" onClick={() => setShow((v) => !v)}>
+                    {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Confirm password</label>
+                <input name="confirm" type={show ? 'text' : 'password'} className="input" placeholder="Optional" value={form.confirm} onChange={onChange} />
+              </div>
+              <Button type="submit" rounded className="w-full py-3">SIGN UP</Button>
+            </form>
+          )}
         </div>
 
-        <div className="px-6 py-5 bg-surface-container-low border-t border-outline-variant text-center">
-          <p className="font-body text-sm text-on-surface-variant">
-            Already have an account?{' '}
-            <Link to="/signin" className="font-label text-sm font-semibold text-primary hover:text-primary-400 ml-1 transition-colors">Sign In</Link>
-          </p>
+        <div className="border-t border-outline-variant bg-cream/50 px-8 py-5 text-center text-sm text-ink-muted">
+          Already have an account?{' '}
+          <Link to="/signin" className="font-semibold text-primary">Sign In</Link>
         </div>
       </div>
     </div>

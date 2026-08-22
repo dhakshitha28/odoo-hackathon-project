@@ -1,12 +1,25 @@
 export const employees = [
-  { id: 1, loginId: 'ODSA20220001', firstName: 'Sansukumar', lastName: 'A', email: 'sansu@dayflow.com', phone: '+91 98765 43210', role: 'ADMIN', department: 'Engineering', designation: 'Senior Developer', dateOfJoining: '2022-01-15', profilePicture: null, status: 'present', address: 'Chennai, Tamil Nadu', gender: 'Male', dateOfBirth: '1995-06-20', bloodGroup: 'B+', maritalStatus: 'Single', nationality: 'Indian', empCode: 'EMP001' },
-  { id: 2, loginId: 'ODRA20220002', firstName: 'Rahul', lastName: 'R', email: 'rahul@dayflow.com', phone: '+91 98765 43211', role: 'EMPLOYEE', department: 'Engineering', designation: 'Software Developer', dateOfJoining: '2022-03-10', profilePicture: null, status: 'present', address: 'Bangalore, Karnataka', gender: 'Male', dateOfBirth: '1997-08-12', bloodGroup: 'O+', maritalStatus: 'Single', nationality: 'Indian', empCode: 'EMP002' },
-  { id: 3, loginId: 'ODPR20220003', firstName: 'Priya', lastName: 'S', email: 'priya@dayflow.com', phone: '+91 98765 43212', role: 'EMPLOYEE', department: 'Design', designation: 'UI/UX Designer', dateOfJoining: '2022-05-20', profilePicture: null, status: 'leave', address: 'Mumbai, Maharashtra', gender: 'Female', dateOfBirth: '1996-03-15', bloodGroup: 'A+', maritalStatus: 'Married', nationality: 'Indian', empCode: 'EMP003' },
-  { id: 4, loginId: 'ODAK20220004', firstName: 'Arjun', lastName: 'K', email: 'arjun@dayflow.com', phone: '+91 98765 43213', role: 'EMPLOYEE', department: 'Marketing', designation: 'Marketing Manager', dateOfJoining: '2022-07-01', profilePicture: null, status: 'absent', address: 'Hyderabad, Telangana', gender: 'Male', dateOfBirth: '1994-11-28', bloodGroup: 'AB+', maritalStatus: 'Married', nationality: 'Indian', empCode: 'EMP004' },
-  { id: 5, loginId: 'ODMS20220005', firstName: 'Meera', lastName: 'S', email: 'meera@dayflow.com', phone: '+91 98765 43214', role: 'EMPLOYEE', department: 'HR', designation: 'HR Executive', dateOfJoining: '2022-09-15', profilePicture: null, status: 'present', address: 'Pune, Maharashtra', gender: 'Female', dateOfBirth: '1998-01-05', bloodGroup: 'O-', maritalStatus: 'Single', nationality: 'Indian', empCode: 'EMP005' },
-  { id: 6, loginId: 'ODVR20230006', firstName: 'Vikram', lastName: 'R', email: 'vikram@dayflow.com', phone: '+91 98765 43215', role: 'EMPLOYEE', department: 'Finance', designation: 'Accountant', dateOfJoining: '2023-01-10', profilePicture: null, status: 'present', address: 'Delhi', gender: 'Male', dateOfBirth: '1993-07-22', bloodGroup: 'A-', maritalStatus: 'Married', nationality: 'Indian', empCode: 'EMP006' },
-  { id: 7, loginId: 'ODAN20230007', firstName: 'Ananya', lastName: 'N', email: 'ananya@dayflow.com', phone: '+91 98765 43216', role: 'EMPLOYEE', department: 'Engineering', designation: 'Backend Developer', dateOfJoining: '2023-03-20', profilePicture: null, status: 'present', address: 'Chennai, Tamil Nadu', gender: 'Female', dateOfBirth: '1999-04-18', bloodGroup: 'B-', maritalStatus: 'Single', nationality: 'Indian', empCode: 'EMP007' },
-  { id: 8, loginId: 'ODKT20230008', firstName: 'Karthik', lastName: 'T', email: 'karthik@dayflow.com', phone: '+91 98765 43217', role: 'EMPLOYEE', department: 'Sales', designation: 'Sales Executive', dateOfJoining: '2023-06-05', profilePicture: null, status: 'absent', address: 'Coimbatore, Tamil Nadu', gender: 'Male', dateOfBirth: '1996-09-30', bloodGroup: 'O+', maritalStatus: 'Single', nationality: 'Indian', empCode: 'EMP008' },
+  { id: 1, loginId: 'OISAAA20220001', firstName: 'Sansukumar', lastName: 'A', email: 'sansu@dayflow.com', phone: '+91 98765 43210', role: 'ADMIN', department: 'Engineering', designation: 'Senior Developer', dateOfJoining: '2022-01-15', profilePicture: null, status: 'present', address: 'Chennai, Tamil Nadu', gender: 'Male', dateOfBirth: '1995-06-20', bloodGroup: 'B+', maritalStatus: 'Single', nationality: 'Indian', empCode: 'EMP001', education: 'B.E. Computer Science', skills: 'People Ops, React, Leadership' },
+  { id: 2, loginId: 'OIRARR20220002', firstName: 'Rahul', lastName: 'R', email: 'rahul@dayflow.com', phone: '+91 98765 43211', role: 'EMPLOYEE', department: 'Engineering', designation: 'Software Developer', dateOfJoining: '2022-03-10', profilePicture: null, status: 'present', address: 'Bangalore, Karnataka', gender: 'Male', dateOfBirth: '1997-08-12', bloodGroup: 'O+', maritalStatus: 'Single', nationality: 'Indian', empCode: 'EMP002', education: 'B.Tech IT', skills: 'Java, Spring Boot' },
+  { id: 3, loginId: 'OIPRSS20220003', firstName: 'Priya', lastName: 'S', email: 'priya@dayflow.com', phone: '+91 98765 43212', role: 'EMPLOYEE', department: 'Design', designation: 'UI/UX Designer', dateOfJoining: '2022-05-20', profilePicture: null, status: 'leave', address: 'Mumbai, Maharashtra', gender: 'Female', dateOfBirth: '1996-03-15', bloodGroup: 'A+', maritalStatus: 'Married', nationality: 'Indian', empCode: 'EMP003', education: 'B.Des', skills: 'Figma, Research' },
+  { id: 4, loginId: 'OIARKK20220004', firstName: 'Arjun', lastName: 'K', email: 'arjun@dayflow.com', phone: '+91 98765 43213', role: 'EMPLOYEE', department: 'Marketing', designation: 'Marketing Manager', dateOfJoining: '2022-07-01', profilePicture: null, status: 'absent', address: 'Hyderabad, Telangana', gender: 'Male', dateOfBirth: '1994-11-28', bloodGroup: 'AB+', maritalStatus: 'Married', nationality: 'Indian', empCode: 'EMP004', education: 'MBA', skills: 'Growth, Brand' },
+  { id: 5, loginId: 'OIMESS20220005', firstName: 'Meera', lastName: 'S', email: 'meera@dayflow.com', phone: '+91 98765 43214', role: 'HR', department: 'HR', designation: 'HR Officer', dateOfJoining: '2022-09-15', profilePicture: null, status: 'present', address: 'Pune, Maharashtra', gender: 'Female', dateOfBirth: '1998-01-05', bloodGroup: 'O-', maritalStatus: 'Single', nationality: 'Indian', empCode: 'EMP005', education: 'MBA HR', skills: 'Recruiting, Payroll' },
+  { id: 6, loginId: 'OIVIRR20230001', firstName: 'Vikram', lastName: 'R', email: 'vikram@dayflow.com', phone: '+91 98765 43215', role: 'EMPLOYEE', department: 'Finance', designation: 'Accountant', dateOfJoining: '2023-01-10', profilePicture: null, status: 'present', address: 'Delhi', gender: 'Male', dateOfBirth: '1993-07-22', bloodGroup: 'A-', maritalStatus: 'Married', nationality: 'Indian', empCode: 'EMP006', education: 'CA', skills: 'GST, Audit' },
+  { id: 7, loginId: 'OIANNN20230002', firstName: 'Ananya', lastName: 'N', email: 'ananya@dayflow.com', phone: '+91 98765 43216', role: 'EMPLOYEE', department: 'Engineering', designation: 'Backend Developer', dateOfJoining: '2023-03-20', profilePicture: null, status: 'present', address: 'Chennai, Tamil Nadu', gender: 'Female', dateOfBirth: '1999-04-18', bloodGroup: 'B-', maritalStatus: 'Single', nationality: 'Indian', empCode: 'EMP007', education: 'B.E. CSE', skills: 'Python, APIs' },
+  { id: 8, loginId: 'OIKATT20230003', firstName: 'Karthik', lastName: 'T', email: 'karthik@dayflow.com', phone: '+91 98765 43217', role: 'EMPLOYEE', department: 'Sales', designation: 'Sales Executive', dateOfJoining: '2023-06-05', profilePicture: null, status: 'absent', address: 'Coimbatore, Tamil Nadu', gender: 'Male', dateOfBirth: '1996-09-30', bloodGroup: 'O+', maritalStatus: 'Single', nationality: 'Indian', empCode: 'EMP008', education: 'B.Com', skills: 'CRM, Outreach' },
+]
+
+const firstPassword = (loginId) => loginId
+
+export const demoAccounts = [
+  { email: 'sansu@dayflow.com', loginId: 'OISAAA20220001', password: firstPassword('OISAAA20220001'), mustChangePassword: false, pending: false },
+  { email: 'meera@dayflow.com', loginId: 'OIMESS20220005', password: firstPassword('OIMESS20220005'), mustChangePassword: false, pending: false },
+  { email: 'rahul@dayflow.com', loginId: 'OIRARR20220002', password: firstPassword('OIRARR20220002'), mustChangePassword: false, pending: false },
+  { email: 'priya@dayflow.com', loginId: 'OIPRSS20220003', password: firstPassword('OIPRSS20220003'), mustChangePassword: true, pending: false },
+  { email: 'arjun@dayflow.com', loginId: 'OIARKK20220004', password: firstPassword('OIARKK20220004'), mustChangePassword: false, pending: false },
+  { email: 'vikram@dayflow.com', loginId: 'OIVIRR20230001', password: firstPassword('OIVIRR20230001'), mustChangePassword: false, pending: false },
+  { email: 'ananya@dayflow.com', loginId: 'OIANNN20230002', password: firstPassword('OIANNN20230002'), mustChangePassword: false, pending: false },
+  { email: 'karthik@dayflow.com', loginId: 'OIKATT20230003', password: firstPassword('OIKATT20230003'), mustChangePassword: false, pending: false },
 ]
 
 export const departments = ['Engineering', 'Design', 'Marketing', 'HR', 'Finance', 'Sales', 'Operations']
@@ -23,6 +36,7 @@ export const attendanceRecords = [
   { id: 9, employeeId: 5, date: '2026-08-22', checkIn: '08:55', checkOut: '18:00', status: 'PRESENT', extraHours: 0 },
   { id: 10, employeeId: 6, date: '2026-08-22', checkIn: '09:30', checkOut: '18:15', status: 'PRESENT', extraHours: 0 },
   { id: 11, employeeId: 7, date: '2026-08-22', checkIn: '09:00', checkOut: '17:45', status: 'PRESENT', extraHours: 0 },
+  { id: 12, employeeId: 1, date: '2026-08-22', checkIn: '08:45', checkOut: null, status: 'PRESENT', extraHours: 0 },
 ]
 
 export const leaveRequests = [
@@ -34,6 +48,7 @@ export const leaveRequests = [
 ]
 
 export const salaryData = [
+  { employeeId: 1, monthlyWage: 120000, yearlyWage: 1440000, noOfWorkingDays: 26, workingDaysPerWeek: 5, basic: 60000, hra: 30000, standardAllowance: 4167, performanceBonus: 9996, leaveTravelAllowance: 10000, pf: 7200, professionalTax: 200 },
   { employeeId: 2, monthlyWage: 75000, yearlyWage: 900000, noOfWorkingDays: 26, workingDaysPerWeek: 5, basic: 37500, hra: 18750, standardAllowance: 5000, performanceBonus: 6250, leaveTravelAllowance: 6250, pf: 4500, professionalTax: 200 },
   { employeeId: 3, monthlyWage: 65000, yearlyWage: 780000, noOfWorkingDays: 26, workingDaysPerWeek: 5, basic: 32500, hra: 16250, standardAllowance: 4000, performanceBonus: 5416, leaveTravelAllowance: 5416, pf: 3900, professionalTax: 200 },
   { employeeId: 4, monthlyWage: 80000, yearlyWage: 960000, noOfWorkingDays: 26, workingDaysPerWeek: 5, basic: 40000, hra: 20000, standardAllowance: 5000, performanceBonus: 6666, leaveTravelAllowance: 6666, pf: 4800, professionalTax: 200 },
@@ -60,25 +75,29 @@ export const activityLog = [
 ]
 
 export function getEmployee(id) {
-  return employees.find(e => e.id === id)
+  return employees.find((e) => e.id === id)
+}
+
+export function getEmployeeSalary(id) {
+  return salaryData.find((s) => s.employeeId === id)
+}
+
+export function getEmployeeAttendance(id) {
+  return attendanceRecords.filter((a) => a.employeeId === id)
+}
+
+export function getEmployeeLeaves(id) {
+  return leaveRequests.filter((l) => l.employeeId === id)
 }
 
 export function getAttendance(employeeId, date) {
-  return attendanceRecords.find(a => a.employeeId === employeeId && a.date === date)
-}
-
-export function getEmployeeAttendance(employeeId) {
-  return attendanceRecords.filter(a => a.employeeId === employeeId)
-}
-
-export function getEmployeeLeaves(employeeId) {
-  return leaveRequests.filter(l => l.employeeId === employeeId)
-}
-
-export function getEmployeeSalary(employeeId) {
-  return salaryData.find(s => s.employeeId === employeeId)
+  return attendanceRecords.find((a) => a.employeeId === employeeId && a.date === date)
 }
 
 export function getUnreadNotificationCount() {
-  return notifications.filter(n => !n.read).length
+  return notifications.filter((n) => !n.read).length
+}
+
+export function isManager(role) {
+  return role === 'ADMIN' || role === 'HR'
 }

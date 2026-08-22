@@ -32,7 +32,7 @@ export function Dialog({ open, onClose, children }) {
 
 export function DialogContent({ className, children, onClose, ...props }) {
   return (
-    <div className={cn('card p-0 shadow-dropdown', className)} {...props}>
+    <div className={cn('relative card p-0 shadow-dropdown', className)} {...props}>
       {onClose && (
         <button
           onClick={onClose}

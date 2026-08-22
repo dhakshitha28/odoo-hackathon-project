@@ -1,203 +1,180 @@
-import { useParams } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, Mail, MapPin, Phone } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
-import { Badge } from '../../components/ui/Badge'
+import { useHR } from '../../context/HRContext'
+import { isManager } from '../../data/mockData'
 import { Avatar } from '../../components/ui/Avatar'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/Tabs'
-import { getEmployee, getEmployeeSalary, getEmployeeAttendance } from '../../data/mockData'
-import { MapPin, Phone, Mail, Edit } from 'lucide-react'
+import StatusIndicator from '../../components/employees/StatusIndicator'
 import Button from '../../components/ui/Button'
+import { formatCurrency } from '../../lib/utils'
+import { computeSalary } from '../../lib/salary'
 
 export default function ProfilePage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
-  const isAdmin = user?.role === 'ADMIN'
-  const profileUser = id ? getEmployee(parseInt(id)) : user
-  const salary = getEmployeeSalary(profileUser?.id)
-  const attendance = getEmployeeAttendance(profileUser?.id)
+  const { team, salaries, attendance, updateSalary } = useHR()
+  const viewingId = id ? Number(id) : user.id
+  const profile = team.find((e) => e.id === viewingId)
+  const fromCard = Boolean(id)
+  const ownProfile = !id || Number(id) === user.id
+  const manager = isManager(user.role)
+  const [tab, setTab] = useState(fromCard && !ownProfile ? 0 : 0)
+  const salary = salaries.find((s) => s.employeeId === viewingId)
+  const [wage, setWage] = useState(salary?.monthlyWage || 50000)
+  const computed = useMemo(() => computeSalary(wage), [wage])
+  const records = attendance.filter((a) => a.employeeId === viewingId)
 
-  if (!profileUser) {
-    return <div className="text-center py-12 text-muted-foreground">Employee not found</div>
+  if (!profile) {
+    return <p className="py-16 text-center text-ink-muted">Employee not found.</p>
   }
 
-  const canEdit = isAdmin || !id
+  const tabs = fromCard && !ownProfile
+    ? ['Personal', 'Job', 'Salary']
+    : ['Personal', 'Job', 'Salary']
+
+  const canEditSalary = manager && (!fromCard || ownProfile || manager)
+  const salaryReadOnly = fromCard && !manager
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Profile Header */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <Avatar firstName={profileUser.firstName} lastName={profileUser.lastName} size="xl" src={profileUser.profilePicture} />
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-xl font-bold text-foreground">{profileUser.firstName} {profileUser.lastName}</h2>
-                <Badge variant={profileUser.role === 'ADMIN' ? 'info' : 'muted'}>{profileUser.role === 'ADMIN' ? 'Admin' : 'Employee'}</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mb-2">{profileUser.designation} · {profileUser.department}</p>
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{profileUser.email}</span>
-                <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{profileUser.phone}</span>
-                <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{profileUser.address}</span>
-              </div>
+    <div className="space-y-6">
+      {fromCard && (
+        <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-sm font-semibold text-ink-muted hover:text-primary">
+          <ArrowLeft className="h-4 w-4" /> Back to employees
+        </button>
+      )}
+
+      <div className="card p-6">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+          <Avatar firstName={profile.firstName} lastName={profile.lastName} size="xl" />
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl font-extrabold">{profile.firstName} {profile.lastName}</h1>
+              <StatusIndicator status={profile.status} />
+              {fromCard && <span className="badge bg-cream text-ink-muted">View only</span>}
             </div>
-            {canEdit && (
-              <Button variant="secondary" icon={Edit}>Edit Profile</Button>
+            <p className="mt-1 text-sm text-ink-muted">{profile.designation} · {profile.department}</p>
+            <p className="mt-2 font-mono text-xs text-primary">{profile.loginId}</p>
+            <div className="mt-3 flex flex-wrap gap-4 text-sm text-ink-muted">
+              <span className="inline-flex items-center gap-1.5"><Mail className="h-4 w-4" />{profile.email}</span>
+              <span className="inline-flex items-center gap-1.5"><Phone className="h-4 w-4" />{profile.phone || '—'}</span>
+              <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" />{profile.address || '—'}</span>
+            </div>
+          </div>
+          {ownProfile && !fromCard && (
+            <Link to="/settings"><Button variant="secondary">Edit limited fields</Button></Link>
+          )}
+        </div>
+      </div>
+
+      <div className="flex gap-1 overflow-x-auto rounded-2xl bg-cream p-1">
+        {tabs.map((t, i) => (
+          <button
+            key={t}
+            onClick={() => setTab(i)}
+            className={`flex-1 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold ${tab === i ? 'bg-white text-primary shadow-soft' : 'text-ink-muted'}`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      <div className="card p-6">
+        {tab === 0 && (
+          <dl className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            {[
+              ['Full name', `${profile.firstName} ${profile.lastName}`],
+              ['Employee ID', profile.loginId],
+              ['Email', profile.email],
+              ['Phone', profile.phone],
+              ['Date of birth', profile.dateOfBirth || '—'],
+              ['Gender', profile.gender || '—'],
+              ['Education', profile.education || '—'],
+              ['Skills', profile.skills || '—'],
+              ['Address', profile.address || '—'],
+              ['Nationality', profile.nationality || '—'],
+            ].map(([k, v]) => (
+              <div key={k}>
+                <dt className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">{k}</dt>
+                <dd className="mt-1 text-sm">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        {tab === 1 && (
+          <dl className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            {[
+              ['Department', profile.department],
+              ['Designation', profile.designation],
+              ['Joining date', profile.dateOfJoining],
+              ['Role', profile.role],
+            ].map(([k, v]) => (
+              <div key={k}>
+                <dt className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">{k}</dt>
+                <dd className="mt-1 text-sm">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        {tab === 2 && (
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-end gap-4">
+              <div className="flex-1">
+                <label className="text-sm font-semibold">Wage type</label>
+                <p className="mt-1 text-sm text-ink-muted">Fixed wage</p>
+              </div>
+              <div>
+                <label className="text-sm font-semibold">Monthly wage</label>
+                <input
+                  type="number"
+                  className="input mt-1 w-40"
+                  value={wage}
+                  disabled={salaryReadOnly}
+                  onChange={(e) => setWage(e.target.value)}
+                />
+              </div>
+              {canEditSalary && !salaryReadOnly && (
+                <Button onClick={() => updateSalary(viewingId, wage)}>Save structure</Button>
+              )}
+            </div>
+            {!computed.withinWage && <p className="text-sm text-error">Components exceed defined wage.</p>}
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Computation</th>
+                  <th className="text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ['Basic', '50% of wage', computed.basic],
+                  ['House Rent Allowance', '50% of Basic', computed.hra],
+                  ['Standard Allowance', 'Fixed 4,167', computed.standardAllowance],
+                  ['Performance Bonus', '8.33% of wage', computed.performanceBonus],
+                  ['Leave Travel Allowance', '8.333% of wage', computed.leaveTravelAllowance],
+                  ['Fixed Allowance', 'Wage − other components', computed.fixedAllowance],
+                  ['PF (12% of Basic)', 'Configurable rate', computed.pf],
+                  ['Professional Tax', 'Fixed 200', computed.professionalTax],
+                ].map(([name, type, amount]) => (
+                  <tr key={name}>
+                    <td>{name}</td>
+                    <td className="text-ink-muted">{type}</td>
+                    <td className="text-right font-medium">{formatCurrency(amount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-sm text-ink-muted">Earnings total {formatCurrency(computed.componentsTotal)} of wage {formatCurrency(computed.monthlyWage)}.</p>
+            {records.length > 0 && fromCard && (
+              <p className="text-xs text-ink-faint">Attendance history lives in the Attendance module.</p>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Tabs */}
-      <Tabs defaultValue="personal">
-        <TabsList>
-          <TabsTrigger value="personal">Personal Info</TabsTrigger>
-          <TabsTrigger value="job">Job Details</TabsTrigger>
-          <TabsTrigger value="salary">Salary Info</TabsTrigger>
-          <TabsTrigger value="attendance">Attendance</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="personal">
-          <Card>
-            <CardHeader><CardTitle>Personal Details</CardTitle></CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                  { label: 'Full Name', value: `${profileUser.firstName} ${profileUser.lastName}` },
-                  { label: 'Employee ID', value: profileUser.loginId },
-                  { label: 'Email', value: profileUser.email },
-                  { label: 'Phone', value: profileUser.phone },
-                  { label: 'Date of Birth', value: profileUser.dateOfBirth || '—' },
-                  { label: 'Gender', value: profileUser.gender || '—' },
-                  { label: 'Blood Group', value: profileUser.bloodGroup || '—' },
-                  { label: 'Marital Status', value: profileUser.maritalStatus || '—' },
-                  { label: 'Nationality', value: profileUser.nationality || '—' },
-                  { label: 'Address', value: profileUser.address || '—' },
-                ].map(item => (
-                  <div key={item.label}>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">{item.label}</p>
-                    <p className="text-sm font-medium">{item.value}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="job">
-          <Card>
-            <CardHeader><CardTitle>Job Details</CardTitle></CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                  { label: 'Department', value: profileUser.department },
-                  { label: 'Designation', value: profileUser.designation },
-                  { label: 'Date of Joining', value: profileUser.dateOfJoining },
-                  { label: 'Employee Code', value: profileUser.empCode },
-                  { label: 'Role', value: profileUser.role === 'ADMIN' ? 'Admin / HR Officer' : 'Employee' },
-                ].map(item => (
-                  <div key={item.label}>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">{item.label}</p>
-                    <p className="text-sm font-medium">{item.value}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="salary">
-          <Card>
-            <CardHeader><CardTitle>Salary Information</CardTitle></CardHeader>
-            <CardContent>
-              {salary ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-muted rounded-lg p-4">
-                      <p className="text-xs text-muted-foreground mb-1">Monthly Wage</p>
-                      <p className="text-lg font-bold">₹{salary.monthlyWage?.toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="bg-muted rounded-lg p-4">
-                      <p className="text-xs text-muted-foreground mb-1">Yearly Wage</p>
-                      <p className="text-lg font-bold">₹{salary.yearlyWage?.toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="bg-muted rounded-lg p-4">
-                      <p className="text-xs text-muted-foreground mb-1">Working Days</p>
-                      <p className="text-lg font-bold">{salary.noOfWorkingDays}/month</p>
-                    </div>
-                    <div className="bg-muted rounded-lg p-4">
-                      <p className="text-xs text-muted-foreground mb-1">PF Contribution</p>
-                      <p className="text-lg font-bold">₹{salary.pf?.toLocaleString('en-IN')}</p>
-                    </div>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="table">
-                      <thead><tr><th>Component</th><th className="text-right">Amount</th></tr></thead>
-                      <tbody>
-                        {[
-                          { name: 'Basic Salary', amount: salary.basic },
-                          { name: 'House Rent Allowance', amount: salary.hra },
-                          { name: 'Standard Allowance', amount: salary.standardAllowance },
-                          { name: 'Performance Bonus', amount: salary.performanceBonus },
-                          { name: 'Leave Travel Allowance', amount: salary.leaveTravelAllowance },
-                          { name: 'Provident Fund', amount: salary.pf },
-                          { name: 'Professional Tax', amount: salary.professionalTax },
-                        ].map(c => (
-                          <tr key={c.name}>
-                            <td className="font-medium">{c.name}</td>
-                            <td className="text-right">₹{c.amount?.toLocaleString('en-IN')}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No salary information available</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="attendance">
-          <Card>
-            <CardHeader><CardTitle>Attendance History</CardTitle></CardHeader>
-            <CardContent>
-              {attendance.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="table">
-                    <thead><tr><th>Date</th><th>Check In</th><th>Check Out</th><th>Status</th><th>Extra Hours</th></tr></thead>
-                    <tbody>
-                      {attendance.map(a => (
-                        <tr key={a.id}>
-                          <td>{new Date(a.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                          <td>{a.checkIn || '—'}</td>
-                          <td>{a.checkOut || '—'}</td>
-                          <td><Badge variant={a.status === 'PRESENT' ? 'success' : a.status === 'LEAVE' ? 'info' : a.status === 'HALF_DAY' ? 'warning' : 'destructive'}>{a.status}</Badge></td>
-                          <td>{a.extraHours > 0 ? `+${a.extraHours}h` : '—'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No attendance records</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="documents">
-          <Card>
-            <CardHeader><CardTitle>Documents</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground text-center py-8">No documents uploaded yet</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </div>
   )
 }
