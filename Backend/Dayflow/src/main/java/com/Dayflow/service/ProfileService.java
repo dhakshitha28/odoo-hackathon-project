@@ -2,6 +2,8 @@ package com.Dayflow.service;
 
 import com.Dayflow.dto.request.UpdateProfileRequest;
 import com.Dayflow.dto.response.ProfileResponse;
+import com.Dayflow.dto.response.SalaryBreakdownResponse;
+import com.Dayflow.exception.BadRequestException;
 import com.Dayflow.exception.ResourceNotFoundException;
 import com.Dayflow.model.Role;
 import com.Dayflow.model.User;
@@ -21,6 +23,7 @@ public class ProfileService {
 
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
+    private final SalaryCalculationService salaryCalculationService;
 
     @Transactional(readOnly = true)
     public ProfileResponse getMyProfile() {
@@ -67,9 +70,28 @@ public class ProfileService {
         if (request.getMonthlyWage() != null) {
             profile.setMonthlyWage(request.getMonthlyWage());
         }
+        if (request.getWorkingDaysPerWeek() != null) {
+            profile.setWorkingDaysPerWeek(request.getWorkingDaysPerWeek());
+        }
+        if (request.getBreakTimeHours() != null) {
+            profile.setBreakTimeHours(request.getBreakTimeHours());
+        }
 
         userProfileRepository.save(profile);
         return toResponse(user, profile);
+    }
+
+    @Transactional(readOnly = true)
+    public SalaryBreakdownResponse getMySalaryBreakdown() {
+        User user = getCurrentUser();
+        if (user.getRole() != Role.ADMIN) {
+            throw new BadRequestException("Salary info is only available for Admin");
+        }
+        UserProfile profile = getOrCreateProfile(user);
+        double wage = profile.getMonthlyWage() != null ? profile.getMonthlyWage() : 0;
+        int workingDays = profile.getWorkingDaysPerWeek() != null ? profile.getWorkingDaysPerWeek() : 5;
+        double breakHours = profile.getBreakTimeHours() != null ? profile.getBreakTimeHours() : 1.0;
+        return salaryCalculationService.calculate(wage, workingDays, breakHours);
     }
 
     private User getCurrentUser() {
@@ -93,6 +115,8 @@ public class ProfileService {
                     .skills(new ArrayList<>())
                     .certifications(new ArrayList<>())
                     .monthlyWage(50000.0)
+                    .workingDaysPerWeek(5)
+                    .breakTimeHours(1.0)
                     .build();
                 return userProfileRepository.save(profile);
             });
@@ -128,6 +152,8 @@ public class ProfileService {
             .skills(profile.getSkills())
             .certifications(profile.getCertifications())
             .monthlyWage(profile.getMonthlyWage())
+            .workingDaysPerWeek(profile.getWorkingDaysPerWeek())
+            .breakTimeHours(profile.getBreakTimeHours())
             .build();
     }
 }

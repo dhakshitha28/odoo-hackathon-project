@@ -57,4 +57,10 @@ public class UserProfile {
     private List<String> certifications = new ArrayList<>();
 
     private Double monthlyWage;
+
+    @Builder.Default
+    private Integer workingDaysPerWeek = 5;
+
+    @Builder.Default
+    private Double breakTimeHours = 1.0;
 }

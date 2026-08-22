@@ -3,6 +3,7 @@ package com.Dayflow.controller;
 import com.Dayflow.dto.request.UpdateProfileRequest;
 import com.Dayflow.dto.response.ApiResponse;
 import com.Dayflow.dto.response.ProfileResponse;
+import com.Dayflow.dto.response.SalaryBreakdownResponse;
 import com.Dayflow.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,18 @@ public class ProfileController {
                 .success(true)
                 .message("Profile updated successfully")
                 .data(profile)
+                .build()
+        );
+    }
+
+    @GetMapping("/me/salary")
+    public ResponseEntity<ApiResponse<SalaryBreakdownResponse>> getMySalaryBreakdown() {
+        SalaryBreakdownResponse breakdown = profileService.getMySalaryBreakdown();
+        return ResponseEntity.ok(
+            ApiResponse.<SalaryBreakdownResponse>builder()
+                .success(true)
+                .message("Salary breakdown fetched successfully")
+                .data(breakdown)
                 .build()
         );
     }
