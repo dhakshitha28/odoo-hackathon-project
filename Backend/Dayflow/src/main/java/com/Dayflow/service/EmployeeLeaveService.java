@@ -1,9 +1,11 @@
 package com.Dayflow.service;
 
 import com.Dayflow.dto.request.CreateLeaveRequest;
+import com.Dayflow.dto.response.EmployeeAllocationResponse;
 import com.Dayflow.dto.response.LeaveBalanceResponse;
 import com.Dayflow.dto.response.LeaveRequestResponse;
 import com.Dayflow.exception.BadRequestException;
+import com.Dayflow.exception.ConflictException;
 import com.Dayflow.exception.ForbiddenException;
 import com.Dayflow.exception.ResourceNotFoundException;
 import com.Dayflow.model.LeaveType;
@@ -105,26 +107,68 @@ public class EmployeeLeaveService {
 
     @Transactional
     public LeaveRequestResponse reviewLeave(Long leaveId, TimeOffStatus status) {
-        User reviewer = currentUserService.getCurrentUser();
-        if (!currentUserService.canCreateEmployee(reviewer)) {
-            throw new ForbiddenException("User does not have permission");
-        }
+        return processReview(leaveId, status, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LeaveRequestResponse> listCompanyTimeOff(String search, TimeOffStatus status) {
+        User reviewer = requireAdminOrHr();
+        String query = search == null ? "" : search.trim().toLowerCase();
+
+        return timeOffRepository.findByUser_Company_IdOrderByIdDesc(reviewer.getCompany().getId())
+            .stream()
+            .filter(leave -> status == null || leave.getStatus() == status)
+            .filter(leave -> matchesSearch(leave, query))
+            .map(this::toLeave)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public LeaveRequestResponse getCompanyTimeOff(Long id) {
+        return toLeave(findCompanyLeave(id));
+    }
+
+    @Transactional
+    public LeaveRequestResponse approveTimeOff(Long id) {
+        return processReview(id, TimeOffStatus.APPROVED, null);
+    }
+
+    @Transactional
+    public LeaveRequestResponse rejectTimeOff(Long id, String comment) {
+        return processReview(id, TimeOffStatus.REJECTED, comment);
+    }
+
+    @Transactional(readOnly = true)
+    public List<EmployeeAllocationResponse> listCompanyAllocations() {
+        User reviewer = requireAdminOrHr();
+        return userRepository.searchCompanyEmployees(reviewer.getCompany().getId(), "")
+            .stream()
+            .map(employee -> EmployeeAllocationResponse.builder()
+                .employeeId(employee.getEmployeeId())
+                .employeeName(employee.getFirstName() + " " + employee.getLastName())
+                .paidTimeOffAvailable(paidBalance(employee))
+                .sickLeaveAvailable(sickBalance(employee))
+                .unpaidLeaveInfo("Unpaid leave does not use a fixed allocation")
+                .build())
+            .toList();
+    }
+
+    private LeaveRequestResponse processReview(Long leaveId, TimeOffStatus status, String comment) {
+        User reviewer = requireAdminOrHr();
         if (status != TimeOffStatus.APPROVED && status != TimeOffStatus.REJECTED) {
             throw new BadRequestException("Status must be APPROVED or REJECTED");
         }
 
-        TimeOff leave = timeOffRepository.findById(leaveId)
-            .orElseThrow(() -> new ResourceNotFoundException("Leave request not found"));
-
-        if (!leave.getUser().getCompany().getId().equals(reviewer.getCompany().getId())) {
-            throw new ForbiddenException("User does not have permission");
-        }
+        TimeOff leave = findCompanyLeave(leaveId, reviewer);
 
         if (leave.getStatus() != TimeOffStatus.PENDING) {
-            throw new BadRequestException("Only pending leave requests can be reviewed");
+            throw new ConflictException("Request has already been processed");
         }
 
         leave.setStatus(status);
+        if (status == TimeOffStatus.REJECTED && comment != null && !comment.isBlank()) {
+            leave.setRejectionComment(comment.trim());
+        }
         timeOffRepository.save(leave);
 
         if (status == TimeOffStatus.APPROVED) {
@@ -135,6 +179,42 @@ public class EmployeeLeaveService {
         }
 
         return toLeave(leave);
+    }
+
+    private TimeOff findCompanyLeave(Long id) {
+        return findCompanyLeave(id, requireAdminOrHr());
+    }
+
+    private TimeOff findCompanyLeave(Long id, User reviewer) {
+        TimeOff leave = timeOffRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Time Off request not found"));
+        if (!leave.getUser().getCompany().getId().equals(reviewer.getCompany().getId())) {
+            throw new ForbiddenException("User does not have permission");
+        }
+        return leave;
+    }
+
+    private User requireAdminOrHr() {
+        User reviewer = currentUserService.getCurrentUser();
+        if (!currentUserService.canCreateEmployee(reviewer)) {
+            throw new ForbiddenException("User does not have permission");
+        }
+        return reviewer;
+    }
+
+    private boolean matchesSearch(TimeOff leave, String query) {
+        if (query == null || query.isBlank()) {
+            return true;
+        }
+        User employee = leave.getUser();
+        String type = leave.getLeaveType() == null ? "" : leave.getLeaveType().name().toLowerCase();
+        String status = leave.getStatus() == null ? "" : leave.getStatus().name().toLowerCase();
+        String name = (employee.getFirstName() + " " + employee.getLastName()).toLowerCase();
+        return name.contains(query)
+            || employee.getEmployeeId().toLowerCase().contains(query)
+            || employee.getLoginId().toLowerCase().contains(query)
+            || type.contains(query.replace(" ", "_"))
+            || status.contains(query);
     }
 
     public long pendingCount(User employee) {
@@ -179,7 +259,9 @@ public class EmployeeLeaveService {
             .remarks(leave.getReason())
             .attachmentUrl(leave.getAttachmentUrl())
             .status(leave.getStatus())
+            .rejectionComment(leave.getRejectionComment())
             .createdAt(leave.getCreatedAt())
+            .employeeName(leave.getUser().getFirstName() + " " + leave.getUser().getLastName())
             .build();
     }
 }

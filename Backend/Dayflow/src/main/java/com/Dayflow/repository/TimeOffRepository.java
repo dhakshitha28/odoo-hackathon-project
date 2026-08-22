@@ -2,6 +2,7 @@ package com.Dayflow.repository;
 
 import com.Dayflow.model.TimeOff;
 import com.Dayflow.model.TimeOffStatus;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +19,9 @@ public interface TimeOffRepository extends JpaRepository<TimeOff, Long> {
     );
 
     List<TimeOff> findByUserIdOrderByIdDesc(Long userId);
+
+    @EntityGraph(attributePaths = {"user", "user.company"})
+    List<TimeOff> findByUser_Company_IdOrderByIdDesc(Long companyId);
 
     long countByUserIdAndStatus(Long userId, TimeOffStatus status);
 

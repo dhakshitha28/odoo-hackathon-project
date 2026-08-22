@@ -20,5 +20,7 @@ public class LeaveRequestResponse {
     private String remarks;
     private String attachmentUrl;
     private TimeOffStatus status;
+    private String rejectionComment;
     private LocalDateTime createdAt;
+    private String employeeName;
 }

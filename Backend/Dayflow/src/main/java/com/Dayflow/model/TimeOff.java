@@ -43,5 +43,8 @@ public class TimeOff {
 
     private Double numberOfDays;
 
+    @Column(length = 1000)
+    private String rejectionComment;
+
     private LocalDateTime createdAt;
 }
