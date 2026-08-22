@@ -6,18 +6,16 @@ import lombok.Data;
 
 @Data
 @Builder
-public class AuthResponse {
-    private String token;
+public class CurrentUserResponse {
+    private Long id;
     private String loginId;
     private String firstName;
     private String lastName;
     private String email;
     private Role role;
+    private String profilePictureUrl;
     private String companyName;
     private String companyLogoUrl;
-    private String profilePictureUrl;
-    private boolean emailVerified;
-    private boolean canCreateEmployee;
     private boolean checkedIn;
-    private String redirectPath;
+    private boolean canCreateEmployee;
 }

@@ -30,6 +30,7 @@ public class AuthService {
     private final LoginIdGeneratorService loginIdGeneratorService;
     private final EmailService emailService;
     private final JwtUtil jwtUtil;
+    private final EmployeeStatusService employeeStatusService;
 
     @Transactional
     public SignupResponse signup(SignupRequest request) {
@@ -114,14 +115,22 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getLoginId(), user.getRole().name());
+        boolean canCreateEmployee = user.getRole() == Role.ADMIN || user.getRole() == Role.HR;
 
         return AuthResponse.builder()
             .token(token)
             .loginId(user.getLoginId())
+            .firstName(user.getFirstName())
+            .lastName(user.getLastName())
             .email(user.getEmail())
             .role(user.getRole())
             .companyName(user.getCompany().getName())
+            .companyLogoUrl(user.getCompany().getLogoUrl())
+            .profilePictureUrl(user.getProfilePictureUrl())
             .emailVerified(user.isEmailVerified())
+            .canCreateEmployee(canCreateEmployee)
+            .checkedIn(employeeStatusService.isCheckedIn(user.getId()))
+            .redirectPath("/dashboard")
             .build();
     }
 

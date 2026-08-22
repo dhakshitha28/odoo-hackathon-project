@@ -1,30 +1,32 @@
 package com.Dayflow.controller;
 
 import com.Dayflow.dto.response.ApiResponse;
-import com.Dayflow.dto.response.EmployeeDetailResponse;
+import com.Dayflow.dto.response.DashboardResponse;
 import com.Dayflow.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/employees")
+@RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
-public class EmployeeController {
+public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<EmployeeDetailResponse>> getEmployee(@PathVariable Long id) {
-        EmployeeDetailResponse response = dashboardService.getEmployee(id);
+    @GetMapping
+    public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard(
+        @RequestParam(required = false) String search
+    ) {
+        DashboardResponse response = dashboardService.getDashboard(search);
 
         return ResponseEntity.ok(
-            ApiResponse.<EmployeeDetailResponse>builder()
+            ApiResponse.<DashboardResponse>builder()
                 .success(true)
-                .message("Employee details loaded")
+                .message("Dashboard loaded")
                 .data(response)
                 .build()
         );

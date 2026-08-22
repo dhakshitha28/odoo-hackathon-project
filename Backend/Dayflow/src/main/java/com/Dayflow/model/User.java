@@ -48,6 +48,8 @@ public class User {
     @Column(nullable = false)
     private int yearOfJoining;
 
+    private String profilePictureUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
