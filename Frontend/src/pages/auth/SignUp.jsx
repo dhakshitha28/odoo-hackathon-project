@@ -111,8 +111,8 @@ export default function SignUp() {
                 title={created.joinedExistingCompany ? 'Joined existing company' : 'Account created'}
                 description={
                   created.joinedExistingCompany
-                    ? `You were added to ${created.companyName}. Check your email for the verification link.`
-                    : 'Check your email for the verification link. You must verify before signing in.'
+                    ? `You were added to ${created.companyName}. You can sign in with your Login ID.`
+                    : 'Your account is ready. Sign in with your Login ID.'
                 }
               />
               <div className="rounded-xl bg-cream p-4 font-mono text-sm space-y-1">
@@ -120,7 +120,7 @@ export default function SignUp() {
                 <p>Email: {created.email}</p>
                 <p>Role: {created.role}</p>
                 <p>Company: {created.companyName}</p>
-                <p className="text-xs text-ink-muted pt-2">Use the verification link from your email (or backend console in dev).</p>
+                <p className="text-xs text-ink-muted pt-2">Sign in with this Login ID and your password.</p>
               </div>
               <Button
                 className="w-full py-3"
@@ -128,7 +128,7 @@ export default function SignUp() {
                 onClick={() => navigate('/signin', {
                   state: {
                     role: 'admin',
-                    message: `Verify your email, then sign in with Login ID: ${created.loginId}`,
+                    message: `Sign in with Login ID: ${created.loginId}`,
                     loginId: created.loginId,
                   },
                 })}

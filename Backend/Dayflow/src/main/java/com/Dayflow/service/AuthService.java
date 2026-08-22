@@ -73,7 +73,7 @@ public class AuthService {
             .password(passwordEncoder.encode(request.getPassword()))
             .phoneNumber(request.getPhoneNumber())
             .role(request.getRole())
-            .emailVerified(false)
+            .emailVerified(true)
             .yearOfJoining(yearOfJoining)
             .company(company)
             .build();
@@ -105,10 +105,6 @@ public class AuthService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadRequestException("Invalid Login ID or password");
-        }
-
-        if (!user.isEmailVerified()) {
-            throw new BadRequestException("Please verify your email before logging in");
         }
 
         String token = jwtUtil.generateToken(user.getLoginId(), user.getRole().name());
