@@ -49,34 +49,22 @@ function getInitialAuth() {
   }
 }
 
-export function mapAuthToUser(authData, extra = {}) {
+export function mapAuthToUser(authData) {
   return {
-    id: extra.id || authData.loginId,
+    id: authData.loginId,
     loginId: authData.loginId,
     email: authData.email,
     role: authData.role,
     companyName: authData.companyName,
+    companyLogoUrl: authData.companyLogoUrl,
     emailVerified: authData.emailVerified ?? true,
-    firstName: extra.firstName || 'User',
-    lastName: extra.lastName || '',
-    phone: extra.phone || extra.phoneNumber || '',
-    employeeId: extra.employeeId || '',
+    firstName: authData.firstName || 'User',
+    lastName: authData.lastName || '',
+    profilePicture: authData.profilePictureUrl || null,
+    canCreateEmployee: Boolean(authData.canCreateEmployee),
+    checkedIn: Boolean(authData.checkedIn),
+    redirectPath: authData.redirectPath || '/dashboard',
     mustChangePassword: false,
-    status: 'present',
-    department: authData.role === 'EMPLOYEE' ? 'Operations' : 'HR',
-    designation:
-      authData.role === 'ADMIN' ? 'Company Admin' : authData.role === 'HR' ? 'HR Officer' : 'Team Member',
-    dateOfJoining: extra.dateOfJoining || new Date().toISOString().slice(0, 10),
-    profilePicture: extra.logoUrl || null,
-    address: '',
-    gender: '',
-    dateOfBirth: '',
-    bloodGroup: '',
-    maritalStatus: '',
-    nationality: 'Indian',
-    empCode: extra.employeeId || '',
-    education: '',
-    skills: '',
   }
 }
 

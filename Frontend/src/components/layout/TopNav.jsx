@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useHR } from '../../context/HRContext'
 import { Avatar } from '../ui/Avatar'
 import Logo from '../brand/Logo'
-import { isManager, getUnreadNotificationCount } from '../../data/mockData'
+import { isManager } from '../../api/unwrap'
 import { cn } from '../../lib/utils'
 
 const links = [
@@ -20,7 +20,7 @@ export default function TopNav() {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
-  const unread = getUnreadNotificationCount()
+  const unread = 0
 
   useEffect(() => {
     const close = (e) => {
@@ -110,7 +110,7 @@ export default function TopNav() {
               onClick={() => setOpen((v) => !v)}
               className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 hover:bg-cream"
             >
-              <Avatar firstName={user?.firstName} lastName={user?.lastName} size="sm" />
+              <Avatar src={user?.profilePicture} firstName={user?.firstName} lastName={user?.lastName} size="sm" />
               <span className="hidden text-left sm:block">
                 <span className="block text-sm font-semibold leading-none">{user?.firstName}</span>
                 <span className="mt-0.5 block text-[11px] text-ink-muted">{user?.role}</span>

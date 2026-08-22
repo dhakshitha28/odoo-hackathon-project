@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { HRProvider } from './context/HRContext'
-import { isManager } from './data/mockData'
+import { isManager } from './api/unwrap'
 import RoleSelect from './pages/RoleSelect'
 import SignIn from './pages/auth/SignIn'
 import SignUp from './pages/auth/SignUp'
