@@ -3,7 +3,9 @@ package com.Dayflow.exception;
 import com.Dayflow.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -30,6 +32,26 @@ public class GlobalExceptionHandler {
             ApiResponse.<Void>builder()
                 .success(false)
                 .message(ex.getMessage())
+                .build()
+        );
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(
+            ApiResponse.<Void>builder()
+                .success(false)
+                .message("Content-Type must be application/json. In Postman: Body → raw → JSON")
+                .build()
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMessageNotReadable(HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest().body(
+            ApiResponse.<Void>builder()
+                .success(false)
+                .message("Invalid JSON body. Check your request format.")
                 .build()
         );
     }

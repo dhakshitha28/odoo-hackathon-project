@@ -60,7 +60,15 @@ public class AuthService {
 
         int yearOfJoining = LocalDateTime.now().getYear();
 
+        String loginId = loginIdGeneratorService.generateLoginId(
+            company,
+            request.getFirstName(),
+            request.getLastName(),
+            yearOfJoining
+        );
+
         User user = User.builder()
+            .loginId(loginId)
             .employeeId(request.getEmployeeId())
             .firstName(request.getFirstName())
             .lastName(request.getLastName())
@@ -72,15 +80,6 @@ public class AuthService {
             .yearOfJoining(yearOfJoining)
             .company(company)
             .build();
-        userRepository.save(user);
-
-        String loginId = loginIdGeneratorService.generateLoginId(
-            company,
-            request.getFirstName(),
-            request.getLastName(),
-            yearOfJoining
-        );
-        user.setLoginId(loginId);
         userRepository.save(user);
 
         String token = UUID.randomUUID().toString();
@@ -101,6 +100,7 @@ public class AuthService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByLoginId(request.getLoginId())
             .orElseThrow(() -> new ResourceNotFoundException("Invalid Login ID or password"));

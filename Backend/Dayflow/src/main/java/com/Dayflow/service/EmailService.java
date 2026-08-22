@@ -18,6 +18,9 @@ public class EmailService {
     @Value("${app.base-url}")
     private String baseUrl;
 
+    @Value("${app.mail.from:dayflow@localhost}")
+    private String mailFrom;
+
     public void sendVerificationEmail(User user, String token) {
         String verificationLink = baseUrl + "/api/auth/verify-email?token=" + token;
 
@@ -27,6 +30,7 @@ public class EmailService {
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(mailFrom);
             message.setTo(user.getEmail());
             message.setSubject("Dayflow - Verify Your Email");
             message.setText(
