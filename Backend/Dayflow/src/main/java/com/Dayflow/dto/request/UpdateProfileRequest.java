@@ -17,4 +17,6 @@ public class UpdateProfileRequest {
     private List<String> skills;
     private List<String> certifications;
     private Double monthlyWage;
+    private Integer workingDaysPerWeek;
+    private Double breakTimeHours;
 }

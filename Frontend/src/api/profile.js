@@ -26,4 +26,14 @@ export async function updateMyProfile(payload) {
   }
 }
 
-export default { getMyProfile, updateMyProfile }
+export async function getSalaryBreakdown() {
+  try {
+    const { data } = await api.get('/profile/me/salary')
+    if (!data.success) throw new Error(data.message || 'Failed to load salary breakdown')
+    return data.data
+  } catch (error) {
+    throw new Error(getApiError(error))
+  }
+}
+
+export default { getMyProfile, updateMyProfile, getSalaryBreakdown }

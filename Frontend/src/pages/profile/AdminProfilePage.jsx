@@ -4,10 +4,7 @@ import { getMyProfile, updateMyProfile } from '../../api/profile'
 import { Avatar } from '../../components/ui/Avatar'
 import Button from '../../components/ui/Button'
 import { Alert } from '../../components/ui/Alert'
-import { formatCurrency } from '../../lib/utils'
-import { computeSalary } from '../../lib/salary'
-
-const TABS = ['Resume', 'Private Info', 'Salary Info']
+import SalaryInfoTab from './SalaryInfoTab'
 
 function EditableBlock({ title, value, onSave, multiline = true }) {
   const [editing, setEditing] = useState(false)
@@ -98,7 +95,7 @@ function ListBox({ title, items, onAdd, onRemove }) {
 
 export default function AdminProfilePage() {
   const [profile, setProfile] = useState(null)
-  const [tab, setTab] = useState(1)
+  const [tab, setTab] = useState('resume')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -108,7 +105,11 @@ export default function AdminProfilePage() {
     setError('')
     try {
       const data = await getMyProfile()
-      setProfile(data)
+      setProfile({
+        ...data,
+        workingDaysPerWeek: data.workingDaysPerWeek ?? 5,
+        breakTimeHours: data.breakTimeHours ?? 1,
+      })
     } catch (err) {
       setError(err.message)
     } finally {
@@ -122,7 +123,11 @@ export default function AdminProfilePage() {
 
   const patch = async (fields) => {
     const updated = await updateMyProfile(fields)
-    setProfile(updated)
+    setProfile({
+      ...updated,
+      workingDaysPerWeek: updated.workingDaysPerWeek ?? 5,
+      breakTimeHours: updated.breakTimeHours ?? 1,
+    })
     setSuccess('Profile saved')
     setTimeout(() => setSuccess(''), 2500)
   }
@@ -135,7 +140,16 @@ export default function AdminProfilePage() {
     reader.readAsDataURL(file)
   }
 
-  const computed = useMemo(() => computeSalary(profile?.monthlyWage || 0), [profile?.monthlyWage])
+  const tabs = useMemo(() => {
+    const base = [
+      { id: 'resume', label: 'Resume' },
+      { id: 'private', label: 'Private Info' },
+    ]
+    if (profile?.role === 'ADMIN') {
+      base.push({ id: 'salary', label: 'Salary Info' })
+    }
+    return base
+  }, [profile?.role])
 
   if (loading) {
     return (
@@ -189,19 +203,19 @@ export default function AdminProfilePage() {
       </div>
 
       <div className="flex gap-1 overflow-x-auto rounded-2xl bg-cream p-1">
-        {TABS.map((t, i) => (
+        {tabs.map((t) => (
           <button
-            key={t}
+            key={t.id}
             type="button"
-            onClick={() => setTab(i)}
-            className={`flex-1 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold ${tab === i ? 'bg-white text-primary shadow-soft' : 'text-ink-muted'}`}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold ${tab === t.id ? 'bg-white text-primary shadow-soft' : 'text-ink-muted'}`}
           >
-            {t}
+            {t.label}
           </button>
         ))}
       </div>
 
-      {tab === 0 && (
+      {tab === 'resume' && (
         <div className="card p-6">
           <EditableBlock
             title="Resume"
@@ -211,7 +225,7 @@ export default function AdminProfilePage() {
         </div>
       )}
 
-      {tab === 1 && (
+      {tab === 'private' && (
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-6">
             <EditableBlock title="About" value={profile.about} onSave={(about) => patch({ about })} />
@@ -235,48 +249,12 @@ export default function AdminProfilePage() {
         </div>
       )}
 
-      {tab === 2 && (
-        <div className="card space-y-5 p-6">
-          <div className="flex flex-wrap items-end gap-4">
-            <div>
-              <label className="text-sm font-semibold">Monthly wage</label>
-              <input
-                type="number"
-                className="input mt-1 w-48"
-                value={profile.monthlyWage ?? ''}
-                onChange={(e) => setProfile({ ...profile, monthlyWage: Number(e.target.value) })}
-              />
-            </div>
-            <Button onClick={() => patch({ monthlyWage: profile.monthlyWage })}>Save salary</Button>
-          </div>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Component</th>
-                <th>Computation</th>
-                <th className="text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ['Basic', '50% of wage', computed.basic],
-                ['House Rent Allowance', '50% of Basic', computed.hra],
-                ['Standard Allowance', 'Fixed 4,167', computed.standardAllowance],
-                ['Performance Bonus', '8.33% of wage', computed.performanceBonus],
-                ['Leave Travel Allowance', '8.333% of wage', computed.leaveTravelAllowance],
-                ['Fixed Allowance', 'Wage − other components', computed.fixedAllowance],
-                ['PF (12% of Basic)', 'Configurable rate', computed.pf],
-                ['Professional Tax', 'Fixed 200', computed.professionalTax],
-              ].map(([name, type, amount]) => (
-                <tr key={name}>
-                  <td>{name}</td>
-                  <td className="text-ink-muted">{type}</td>
-                  <td className="text-right font-medium">{formatCurrency(amount)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {tab === 'salary' && profile.role === 'ADMIN' && (
+        <SalaryInfoTab
+          profile={profile}
+          onSave={patch}
+          onProfileChange={(fields) => setProfile((prev) => ({ ...prev, ...fields }))}
+        />
       )}
     </div>
   )
