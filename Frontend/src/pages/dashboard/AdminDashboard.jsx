@@ -35,7 +35,7 @@ export default function AdminDashboard() {
           <p className="text-sm font-medium text-primary">Human Resource Management</p>
           <h1 className="mt-1 text-3xl font-extrabold tracking-tight">Employees</h1>
           <p className="mt-1 text-sm text-ink-muted">
-            Welcome, {user.firstName}. Click a card to open an employee in view-only mode.
+            {user.companyName ? `${user.companyName} only. ` : ''}Click a card to open an employee in view-only mode.
           </p>
         </div>
         {user.canCreateEmployee && (
@@ -57,6 +57,9 @@ export default function AdminDashboard() {
 
       {error && <Alert variant="destructive" description={error} />}
       {loading && <p className="text-sm text-ink-muted">Loading…</p>}
+      {!loading && !error && employees.length === 0 && (
+        <p className="py-12 text-center text-sm text-ink-muted">No employees found.</p>
+      )}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         {employees.map((emp) => (

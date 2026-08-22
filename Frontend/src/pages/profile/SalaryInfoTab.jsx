@@ -44,23 +44,25 @@ export default function SalaryInfoTab({ profile, onSave, onProfileChange }) {
     [profile.monthlyWage, profile.workingDaysPerWeek, profile.breakTimeHours]
   )
 
-  useEffect(() => {
-    let cancelled = false
+  const loadBreakdown = () => {
     setLoading(true)
     getSalaryBreakdown()
-      .then((data) => {
-        if (!cancelled) setBreakdown(data)
-      })
-      .catch(() => {
-        if (!cancelled) setBreakdown(null)
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => { cancelled = true }
-  }, [profile.monthlyWage, profile.workingDaysPerWeek, profile.breakTimeHours])
+      .then(setBreakdown)
+      .catch(() => setBreakdown(null))
+      .finally(() => setLoading(false))
+  }
 
-  const display = breakdown || preview
+  useEffect(() => {
+    loadBreakdown()
+  }, [])
+
+  const savedWage = breakdown?.monthlyWage
+  const wageDirty =
+    Number(profile.monthlyWage) !== Number(savedWage) ||
+    Number(profile.workingDaysPerWeek) !== Number(breakdown?.workingDaysPerWeek) ||
+    Number(profile.breakTimeHours) !== Number(breakdown?.breakTimeHours)
+
+  const display = wageDirty || !breakdown ? preview : breakdown
 
   const save = async () => {
     setSaving(true)
@@ -70,6 +72,8 @@ export default function SalaryInfoTab({ profile, onSave, onProfileChange }) {
         workingDaysPerWeek: profile.workingDaysPerWeek,
         breakTimeHours: profile.breakTimeHours,
       })
+      const data = await getSalaryBreakdown()
+      setBreakdown(data)
     } finally {
       setSaving(false)
     }

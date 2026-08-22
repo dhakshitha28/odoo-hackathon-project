@@ -16,4 +16,5 @@ public class CreateEmployeeResponse {
     private String jobPosition;
     private LocalDate dateOfJoining;
     private Role role;
+    private String companyName;
 }

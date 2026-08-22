@@ -101,6 +101,7 @@ public class EmployeeService {
             .jobPosition(employee.getJobPosition())
             .dateOfJoining(employee.getDateOfJoining())
             .role(employee.getRole())
+            .companyName(employee.getCompany().getName())
             .build();
     }
 

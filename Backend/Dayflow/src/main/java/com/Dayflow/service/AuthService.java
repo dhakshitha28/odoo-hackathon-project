@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -42,22 +43,17 @@ public class AuthService {
             throw new BadRequestException("Password and confirm password do not match");
         }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.getEmail().trim())) {
             throw new BadRequestException("Email already registered");
         }
 
-        if (companyRepository.existsByName(request.getCompanyName())) {
-            throw new BadRequestException("Company name already exists");
+        String employeeId = request.getEmployeeId().trim();
+        if (userRepository.existsByEmployeeId(employeeId)) {
+            throw new BadRequestException("Employee ID already exists");
         }
 
-        String companyPrefix = loginIdGeneratorService.generateCompanyPrefix(request.getCompanyName());
-
-        Company company = Company.builder()
-            .name(request.getCompanyName())
-            .logoUrl(request.getLogoUrl())
-            .prefix(companyPrefix)
-            .build();
-        companyRepository.save(company);
+        CompanyLookup companyLookup = resolveOrCreateCompany(request.getCompanyName(), request.getLogoUrl());
+        Company company = companyLookup.company();
 
         int yearOfJoining = LocalDateTime.now().getYear();
 
@@ -70,10 +66,10 @@ public class AuthService {
 
         User user = User.builder()
             .loginId(loginId)
-            .employeeId(request.getEmployeeId())
+            .employeeId(employeeId)
             .firstName(request.getFirstName())
             .lastName(request.getLastName())
-            .email(request.getEmail())
+            .email(request.getEmail().trim())
             .password(passwordEncoder.encode(request.getPassword()))
             .phoneNumber(request.getPhoneNumber())
             .role(request.getRole())
@@ -98,6 +94,7 @@ public class AuthService {
             .email(user.getEmail())
             .role(user.getRole())
             .companyName(company.getName())
+            .joinedExistingCompany(companyLookup.existing())
             .build();
     }
 
@@ -150,5 +147,49 @@ public class AuthService {
         tokenRepository.delete(verificationToken);
 
         return "Email verified successfully. You can now login with Login ID: " + user.getLoginId();
+    }
+
+    private CompanyLookup resolveOrCreateCompany(String rawName, String logoUrl) {
+        String name = rawName == null ? "" : rawName.trim().replaceAll("\\s+", " ");
+        if (name.isBlank()) {
+            throw new BadRequestException("Company name is required");
+        }
+
+        String code = toCompanyCode(name);
+        Company existing = companyRepository.findByCode(code)
+            .or(() -> companyRepository.findByNameIgnoreCase(name))
+            .orElse(null);
+
+        if (existing != null) {
+            if (existing.getCode() == null || existing.getCode().isBlank()) {
+                existing.setCode(code);
+            }
+            if ((existing.getLogoUrl() == null || existing.getLogoUrl().isBlank())
+                && logoUrl != null && !logoUrl.isBlank()) {
+                existing.setLogoUrl(logoUrl);
+            }
+            return new CompanyLookup(companyRepository.save(existing), true);
+        }
+
+        Company company = Company.builder()
+            .name(name)
+            .code(code)
+            .logoUrl(logoUrl)
+            .prefix(loginIdGeneratorService.generateCompanyPrefix(name))
+            .build();
+        return new CompanyLookup(companyRepository.save(company), false);
+    }
+
+    private String toCompanyCode(String name) {
+        String code = name.toLowerCase(Locale.ROOT)
+            .replaceAll("[^a-z0-9]+", "-")
+            .replaceAll("^-+|-+$", "");
+        if (code.isBlank()) {
+            throw new BadRequestException("Company name is invalid");
+        }
+        return code;
+    }
+
+    private record CompanyLookup(Company company, boolean existing) {
     }
 }

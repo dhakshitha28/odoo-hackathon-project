@@ -19,6 +19,9 @@ public class Company {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(unique = true, length = 120)
+    private String code;
+
     private String logoUrl;
 
     @Column(nullable = false, length = 10)

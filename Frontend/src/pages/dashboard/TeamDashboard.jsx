@@ -72,7 +72,9 @@ export default function TeamDashboard() {
         <div>
           <p className="text-sm font-medium text-primary">Good {new Date().getHours() < 12 ? 'morning' : 'afternoon'}, {user.firstName}</p>
           <h1 className="mt-1 text-3xl font-extrabold tracking-tight">Your team, in flow</h1>
-          <p className="mt-1 text-sm text-ink-muted">Click a card to open employee information in view-only mode.</p>
+          <p className="mt-1 text-sm text-ink-muted">
+            {user.companyName ? `${user.companyName}. ` : ''}New employees join your company automatically. Click a card for view-only details.
+          </p>
         </div>
         {user.canCreateEmployee && (
           <Button className="gap-2" onClick={() => { setCreated(null); setForm(emptyForm); setFormError(''); setOpen(true) }}>
@@ -109,6 +111,7 @@ export default function TeamDashboard() {
                 <p>Department: {created.department}</p>
                 <p>Job position: {created.jobPosition}</p>
                 <p>Role: {created.role}</p>
+                {created.companyName && <p>Company: {created.companyName}</p>}
               </div>
               <DialogFooter>
                 <Button onClick={() => setOpen(false)}>Done</Button>

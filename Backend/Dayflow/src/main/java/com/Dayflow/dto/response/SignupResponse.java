@@ -11,4 +11,5 @@ public class SignupResponse {
     private String email;
     private Role role;
     private String companyName;
+    private boolean joinedExistingCompany;
 }

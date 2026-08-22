@@ -80,14 +80,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException ex) {
-        String message = "This email, company name, or login ID already exists. Please use different details.";
+        String message = "This email or login ID already exists. Please use different details.";
 
         if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("login_id")) {
             message = "Login ID already exists. Use a different name or restart the server to clear test data.";
         } else if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("email")) {
             message = "Email already registered. Please use a different email.";
-        } else if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("name")) {
-            message = "Company name already exists. Please use a different company name.";
+        } else if (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("employee")) {
+            message = "Employee ID already exists. Please use a different Employee ID.";
         }
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(

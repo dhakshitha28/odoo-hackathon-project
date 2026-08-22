@@ -39,7 +39,11 @@ export default function TopNav() {
       )}
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-6">
         <button type="button" onClick={() => navigate('/dashboard')} className="flex items-center gap-2.5">
-          <Logo className="h-9 w-9" />
+          {user?.companyLogoUrl ? (
+            <img src={user.companyLogoUrl} alt="" className="h-9 w-9 rounded-xl object-cover" />
+          ) : (
+            <Logo className="h-9 w-9" />
+          )}
           <div className="text-left">
             <p className="text-base font-extrabold tracking-tight text-primary">Dayflow</p>
             <p className="hidden text-[11px] text-ink-faint sm:block">Every workday, aligned.</p>
@@ -110,7 +114,16 @@ export default function TopNav() {
               onClick={() => setOpen((v) => !v)}
               className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 hover:bg-cream"
             >
-              <Avatar src={user?.profilePicture} firstName={user?.firstName} lastName={user?.lastName} size="sm" />
+              <span className="relative">
+                <Avatar src={user?.profilePicture} firstName={user?.firstName} lastName={user?.lastName} size="sm" />
+                <span
+                  title={user?.checkedIn ? 'Checked in' : 'Not checked in'}
+                  className={cn(
+                    'absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-white',
+                    user?.checkedIn ? 'bg-present' : 'bg-error',
+                  )}
+                />
+              </span>
               <span className="hidden text-left sm:block">
                 <span className="block text-sm font-semibold leading-none">{user?.firstName}</span>
                 <span className="mt-0.5 block text-[11px] text-ink-muted">{user?.role}</span>

@@ -95,8 +95,10 @@ export default function SignUp() {
       <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-outline-variant bg-white shadow-elevated">
         <div className="border-b border-outline-variant px-8 pb-6 pt-8 text-center">
           <div className="mb-4 inline-flex"><Logo className="h-12 w-12" /></div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Create company</h1>
-          <p className="mt-2 text-sm text-ink-muted">Admin / HR signup. Employees are added by HR later.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">Create account</h1>
+          <p className="mt-2 text-sm text-ink-muted">
+            Admin / HR signup. Use your company name to join an existing company, or create a new one. Employees are added by HR later.
+          </p>
         </div>
 
         <div className="px-8 py-6">
@@ -106,13 +108,18 @@ export default function SignUp() {
             <div className="space-y-4">
               <Alert
                 variant="success"
-                title="Account created"
-                description="Check your email for the verification link. You must verify before signing in."
+                title={created.joinedExistingCompany ? 'Joined existing company' : 'Account created'}
+                description={
+                  created.joinedExistingCompany
+                    ? `You were added to ${created.companyName}. Check your email for the verification link.`
+                    : 'Check your email for the verification link. You must verify before signing in.'
+                }
               />
               <div className="rounded-xl bg-cream p-4 font-mono text-sm space-y-1">
                 <p>Login ID: {created.loginId}</p>
                 <p>Email: {created.email}</p>
                 <p>Role: {created.role}</p>
+                <p>Company: {created.companyName}</p>
                 <p className="text-xs text-ink-muted pt-2">Use the verification link from your email (or backend console in dev).</p>
               </div>
               <Button
@@ -143,6 +150,7 @@ export default function SignUp() {
                     <input type="file" accept="image/*" className="hidden" onChange={onLogo} />
                   </label>
                 </div>
+                <p className="text-xs text-ink-muted">Same company name as teammates joins that company. A new name creates a new company.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

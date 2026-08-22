@@ -198,6 +198,7 @@ export function AuthProvider({ children }) {
       email: signupData.email,
       role: signupData.role,
       companyName: signupData.companyName,
+      joinedExistingCompany: Boolean(signupData.joinedExistingCompany),
       message: response.message,
     }
   }
